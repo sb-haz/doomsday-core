@@ -1,0 +1,49 @@
+name: Doomsday
+version: 1.0.0
+main: gg.doomsday.core.DoomsdayCore
+api-version: 1.20
+
+commands:
+  rocket:
+    description: Launch rockets from config presets or manual coordinates
+    usage: /rocket <rocketName> | /rocket reload | /rocket create <x1> <y1> <z1> <x2> <y2> <z2> [smokeOffset] [speed] [arcScale] [sound] [explosionType]
+    permission: rocket.use
+    aliases: [r]
+  cc:
+    description: Send colored chat messages using & color codes
+    usage: /cc <message>
+    permission: colorchat.use
+  rr:
+    description: Quick server reload command
+    usage: /rr
+    permission: rocket.reload
+  nation:
+    description: Smart nation GUI - selection if not in nation, list if in nation
+    usage: /nation | /nation leave
+    permission: rocket.use
+    aliases: [nations, n]
+  season:
+    description: Manage game seasons
+    usage: /season | /season current | /season create <id> | /season activate | /season archive
+    permission: rocket.use
+    aliases: [seasons, s]
+
+permissions:
+  rocket.use:
+    description: Allows using /rocket
+    default: true
+  rocket.reload:
+    description: Allows reloading rocket config
+    default: op
+  rocket.powder:
+    description: Allows getting reinforcement powder
+    default: op
+  rocket.antiair:
+    description: Allows managing anti-air defense systems
+    default: op
+  colorchat.use:
+    description: Allows using /cc for colored chat
+    default: true
+  season.admin:
+    description: Allows managing seasons (create, activate, archive)
+    default: op

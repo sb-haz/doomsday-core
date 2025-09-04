@@ -1,0 +1,509 @@
+# ========================================
+# ROCKET PLUGIN CONFIGURATION
+# ========================================
+
+soundRadius: 100
+
+# ========================================
+# MESSAGING CONFIGURATION
+# ========================================
+messaging:
+  # Missile launch notifications
+  missiles:
+    global: true           # If true, all players see missile launches
+    radius: 500           # If global=false, only players within this radius see the message
+    
+  # Anti-air defense notifications  
+  antiair:
+    global: false         # If true, all players see anti-air activity
+    radius: 150          # If global=false, only players within this radius see the message
+    
+  # Natural disaster notifications
+  disasters:
+    global: false         # If true, all players see disaster announcements
+    radius: 200          # If global=false, only players within this radius see the message
+
+# ========================================
+# MISSILE CONFIGURATION
+# ========================================
+rockets:
+
+  # 🇺🇸 America (West, -192,0)
+  trident_america:
+    displayName: "Trident II"
+    start:
+      x: -170
+      y: 102
+      z: 30
+    end:
+      x: 192
+      y: 100
+      z: 0
+    smokeOffset: 0.0
+    speed: 0.5
+    arcScale: 1.2
+    sound: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+    explosionType: "POWERFUL"
+
+  tomahawk_america_north:
+    displayName: "Tomahawk Cruise"
+    start:
+      x: -170
+      y: 102
+      z: -30
+    end:
+      x: 0
+      y: 100
+      z: 192
+    smokeOffset: 0.0
+    speed: 0.45
+    arcScale: 0.8
+    sound: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+    explosionType: "HORIZONTAL_SPREAD"
+
+  tomahawk_america_south:
+    displayName: "Tomahawk Cruise"
+    start:
+      x: -192
+      y: 102
+      z: 50
+    end:
+      x: 0
+      y: 100
+      z: -192
+    smokeOffset: 0.0
+    speed: 0.45
+    arcScale: 0.8
+    sound: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+    explosionType: "HORIZONTAL_SPREAD"
+
+  # 🇨🇳 Asia (East, +192,0)
+  df21_asia:
+    displayName: "DF-21"
+    start:
+      x: 170
+      y: 102
+      z: 20
+    end:
+      x: -192
+      y: 100
+      z: 0
+    smokeOffset: 0.0
+    speed: 0.4
+    arcScale: 1.0
+    sound: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+    explosionType: "BUNKER_BUSTER"
+
+  iskander_asia:
+    displayName: "Iskander"
+    start:
+      x: 170
+      y: 102
+      z: -20
+    end:
+      x: 0
+      y: 100
+      z: -192
+    smokeOffset: 0.0
+    speed: 0.35
+    arcScale: 0.9
+    sound: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+    explosionType: "DEFAULT"
+
+  # 🧊 Antarctica (North, 0,+192)
+  v2_antarctica:
+    displayName: "V-2 Rocket"
+    start:
+      x: 20
+      y: 102
+      z: 188
+    end:
+      x: 0
+      y: 100
+      z: -192
+    smokeOffset: 0.0
+    speed: 0.25
+    arcScale: 0.7
+    sound: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+    explosionType: "DEFAULT"
+
+  tsar_antarctica:
+    displayName: "Tsar Test"
+    start:
+      x: -20
+      y: 102
+      z: 200
+    end:
+      x: -192
+      y: 100
+      z: 0
+    smokeOffset: 0.0
+    speed: 0.22
+    arcScale: 1.1
+    sound: "ENTITY_WITHER_SPAWN"
+    explosionType: "NUCLEAR"
+
+  # 🌍 Africa (Centre, 0,0)
+  scud_africa:
+    displayName: "Scud-B"
+    start:
+      x: -2
+      y: 102
+      z: 0
+    end:
+      x: 192
+      y: 100
+      z: 0
+    smokeOffset: 0.0
+    speed: 0.3
+    arcScale: 0.7
+    sound: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+    explosionType: "DEFAULT"
+
+  fadjar_africa:
+    displayName: "Fadjar-110"
+    start:
+      x: -20
+      y: 102
+      z: -20
+    end:
+      x: -192
+      y: 100
+      z: 0
+    smokeOffset: 0.0
+    speed: 0.28
+    arcScale: 0.6
+    sound: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+    explosionType: "BUNKER_BUSTER"
+
+  # 🇪🇺 Europe (South, 0,-192)
+  stormshadow_europe:
+    displayName: "Storm Shadow"
+    start:
+      x: -20
+      y: 102
+      z: -200
+    end:
+      x: 192
+      y: 100
+      z: 0
+    smokeOffset: 0.0
+    speed: 0.38
+    arcScale: 0.9
+    sound: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+    explosionType: "DEFAULT"
+
+  scalp_europe:
+    displayName: "SCALP-EG"
+    start:
+      x: 20
+      y: 102
+      z: -220
+    end:
+      x: -192
+      y: 100
+      z: 0
+    smokeOffset: 0.0
+    speed: 0.36
+    arcScale: 0.8
+    sound: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+    explosionType: "HORIZONTAL_SPREAD"
+
+# ========================================
+# ANTI-AIR DEFENSE CONFIGURATION
+# ========================================
+antiair:
+  defenses:
+
+    # 🇺🇸 America (West, -192,0)
+    patriot_america_border:
+      displayName: "Patriot Battery (USA - Core)"
+      location:
+        x: -192
+        y: 102
+        z: 0
+      range: 160
+      accuracy: 0.95
+      interceptorSpeed: 9.0
+      reloadTime: 0.1
+      startupTime: 0.8
+      automatic: true
+
+    aegis_america_north:
+      displayName: "Aegis System (USA - North)"
+      location:
+        x: -220
+        y: 102
+        z: 40
+      range: 180
+      accuracy: 0.92
+      interceptorSpeed: 8.5
+      reloadTime: 0.15
+      startupTime: 1.0
+      automatic: true
+
+    aegis_america_south:
+      displayName: "Aegis System (USA - South)"
+      location:
+        x: -220
+        y: 102
+        z: -40
+      range: 180
+      accuracy: 0.92
+      interceptorSpeed: 8.5
+      reloadTime: 0.15
+      startupTime: 1.0
+      automatic: true
+
+    core_defense_america:
+      displayName: "Core Defense (USA)"
+      location:
+        x: -240
+        y: 102
+        z: 0
+      range: 120
+      accuracy: 0.90
+      interceptorSpeed: 8.0
+      reloadTime: 0.2
+      startupTime: 1.2
+      automatic: true
+
+    # 🇨🇳 Asia (East, +192,0)
+    hq9_asia_border:
+      displayName: "HQ-9 SAM (Asia - Border)"
+      location:
+        x: 192
+        y: 102
+        z: 0
+      range: 140
+      accuracy: 0.90
+      interceptorSpeed: 8.0
+      reloadTime: 0.2
+      startupTime: 1.0
+      automatic: true
+
+    s400_asia_core:
+      displayName: "S-400 Triumph (Asia - Core)"
+      location:
+        x: 220
+        y: 102
+        z: 36
+      range: 150
+      accuracy: 0.88
+      interceptorSpeed: 7.8
+      reloadTime: 0.25
+      startupTime: 1.2
+      automatic: true
+
+    s400_asia_support:
+      displayName: "S-400 Triumph (Asia - Support)"
+      location:
+        x: 220
+        y: 102
+        z: -36
+      range: 150
+      accuracy: 0.88
+      interceptorSpeed: 7.8
+      reloadTime: 0.25
+      startupTime: 1.2
+      automatic: true
+
+    # 🧊 Antarctica (North, 0,+192)
+    flak_antarctica_core:
+      displayName: "WW2 Flak Battery (Antarctica)"
+      location:
+        x: 0
+        y: 102
+        z: 192
+      range: 50
+      accuracy: 0.65
+      interceptorSpeed: 5.0
+      reloadTime: 0.6
+      startupTime: 2.5
+      automatic: false
+
+    iris_antarctica_support:
+      displayName: "IRIS-T SLM (Antarctica - Support)"
+      location:
+        x: -32
+        y: 102
+        z: 160
+      range: 100
+      accuracy: 0.80
+      interceptorSpeed: 7.0
+      reloadTime: 0.3
+      startupTime: 1.6
+      automatic: false
+
+    # 🌍 Africa (Centre, 0,0)
+    kub_africa_core:
+      displayName: "Kub System (Africa - Core)"
+      location:
+        x: 0
+        y: 102
+        z: 0
+      range: 80
+      accuracy: 0.75
+      interceptorSpeed: 6.5
+      reloadTime: 0.4
+      startupTime: 2.0
+      automatic: false
+
+    zsu_africa_support:
+      displayName: "ZSU-23 Shilka (Africa - Support)"
+      location:
+        x: -40
+        y: 102
+        z: 20
+      range: 60
+      accuracy: 0.70
+      interceptorSpeed: 6.0
+      reloadTime: 0.5
+      startupTime: 2.2
+      automatic: false
+
+    # 🇪🇺 Europe (South, 0,-192)
+    s300_europe_core:
+      displayName: "S-300 Battery (Europe - Core)"
+      location:
+        x: 0
+        y: 102
+        z: -192
+      range: 120
+      accuracy: 0.85
+      interceptorSpeed: 7.5
+      reloadTime: 0.25
+      startupTime: 1.5
+      automatic: false
+
+    iris_europe_support:
+      displayName: "IRIS-T SLM (Europe - Support)"
+      location:
+        x: 20
+        y: 102
+        z: -160
+      range: 100
+      accuracy: 0.80
+      interceptorSpeed: 7.0
+      reloadTime: 0.3
+      startupTime: 1.6
+      automatic: false
+
+# ========================================
+# NUCLEAR EXPLOSION CONFIGURATION
+# ========================================
+nuclear:
+  # How long the mushroom cloud stays visible (in seconds)
+  cloudDuration: 15
+  # How long the black particles persist (in seconds) 
+  particleDuration: 6
+  # Mushroom cloud size settings
+  cloud:
+    # Base radius of the cloud (blocks)
+    baseRadius: 20
+    # Height of the stem (blocks)
+    stemHeight: 45
+    # Height of the cap (blocks) 
+    capHeight: 35
+    # How dense the cloud appears (0.0-1.0, higher = more dense)
+    density: 0.3
+  # Smoke ring settings
+  rings:
+    # Inner ring radius (blocks)
+    innerRadius: 25
+    # Outer ring radius (blocks)
+    outerRadius: 45
+    # Ring density (0.0-1.0, higher = more dense)
+    density: 0.5
+  # Nuclear crater settings
+  crater:
+    # How deep the crater goes (in blocks)
+    depth: 15
+    # Radius of the crater (in blocks)
+    radius: 25
+  # Nuclear flash and shockwave settings
+  effects:
+    # How far the white flash reaches (in blocks)
+    flashRadius: 100
+    # How far the shockwave travels (in blocks)
+    shockwaveRadius: 80
+    # How far fire spreads from ground zero (in blocks)
+    fireSpreadRadius: 35
+    # How far smoke rings travel (in blocks)
+    smokeRingRadius: 100
+    # How far head shake effect reaches (in blocks)
+    headShakeRadius: 60
+
+# ========================================
+# REINFORCED BLOCKS CONFIGURATION
+# ========================================
+# Reinforced blocks system - blocks that have been strengthened with reinforcement powder
+reinforcement:
+  # Valid block types that can be reinforced
+  validBlocks:
+    # Wood blocks
+    - OAK_PLANKS
+    - BIRCH_PLANKS
+    - SPRUCE_PLANKS
+    - JUNGLE_PLANKS
+    - ACACIA_PLANKS
+    - DARK_OAK_PLANKS
+    - MANGROVE_PLANKS
+    - CHERRY_PLANKS
+    - BAMBOO_PLANKS
+    
+    # Stone blocks
+    - STONE
+    - STONE_BRICKS
+    - CRACKED_STONE_BRICKS
+    - MOSSY_STONE_BRICKS
+    - COBBLESTONE
+    - BRICKS
+    
+    # Metal blocks
+    - IRON_BLOCK
+    - GOLD_BLOCK
+    - DIAMOND_BLOCK
+
+  # Explosion resistance for reinforced blocks (0.0-1.0)
+  # Only reinforced blocks get these resistance values
+  resistance:
+    # Wood blocks (20% Resistance)
+    OAK_PLANKS: 0.20
+    BIRCH_PLANKS: 0.20
+    SPRUCE_PLANKS: 0.20
+    JUNGLE_PLANKS: 0.20
+    ACACIA_PLANKS: 0.20
+    DARK_OAK_PLANKS: 0.20
+    MANGROVE_PLANKS: 0.20
+    CHERRY_PLANKS: 0.20
+    BAMBOO_PLANKS: 0.20
+    
+    # Stone blocks (30% Resistance)
+    STONE: 0.30
+    STONE_BRICKS: 0.30
+    CRACKED_STONE_BRICKS: 0.30
+    MOSSY_STONE_BRICKS: 0.30
+    COBBLESTONE: 0.30
+    BRICKS: 0.30
+    
+    # Metal blocks
+    IRON_BLOCK: 0.60    # Iron block (60% Resistance)
+    GOLD_BLOCK: 0.80    # Gold block (80% Resistance)
+    DIAMOND_BLOCK: 0.90 # Diamond block (90% Resistance)
+
+# ========================================
+# LEGACY BLOCK RESISTANCE (DEPRECATED)
+# ========================================
+# This section is deprecated - now only reinforced blocks have resistance
+# Keeping for backward compatibility but values are ignored
+blockResistance:
+  STONE_BRICKS: 0.0
+  CRACKED_STONE_BRICKS: 0.0
+  MOSSY_STONE_BRICKS: 0.0
+  COBBLESTONE: 0.0
+  STONE: 0.0
+  OBSIDIAN: 0.95
+  BEDROCK: 1.0
+  IRON_BLOCK: 0.0
+  DIAMOND_BLOCK: 0.0

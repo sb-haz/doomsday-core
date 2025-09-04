@@ -1,0 +1,15 @@
+# Nation Player Memberships Configuration
+# Tracks which nation each player belongs to and when they joined
+
+players:
+  # UUID -> Nation Data
+  # Example:
+  # 12345678-1234-5678-9abc-def123456789:
+  #   nation: "america"
+  #   joinDate: 1640995200000  # Unix timestamp in milliseconds
+  #   canSwitch: true
+
+# Settings
+settings:
+  allowSwitching: true  # If false, players cannot leave their current nation (but new players can still join)
+  switchCooldown: 86400000  # 24 hours in milliseconds (0 to disable cooldown)

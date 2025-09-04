@@ -1,0 +1,5 @@
+# Seasons Configuration
+# Only contains one season at a time - gets reset each season
+# Use /season create <id> to create a new season
+
+seasons: []

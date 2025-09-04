@@ -1,0 +1,50 @@
+# ========================================
+# CUSTOM ITEMS CONFIGURATION
+# ========================================
+# Configure custom items appearance and behavior
+# 
+# Color Codes:
+# &0 = Black    &1 = Dark Blue   &2 = Dark Green  &3 = Dark Aqua
+# &4 = Dark Red &5 = Dark Purple &6 = Gold        &7 = Gray
+# &8 = Dark Gray &9 = Blue       &a = Green       &b = Aqua
+# &c = Red      &d = Light Purple &e = Yellow     &f = White
+#
+# Formatting:
+# &l = Bold     &o = Italic      &n = Underline   &m = Strikethrough
+# &k = Magic    &r = Reset
+# ========================================
+
+reinforcement_powder:
+  material: CLAY_BALL
+  # Custom model data for resource pack support (1-9999)
+  custom_model_data: 2001
+  display_name: "&eConcrete Reinforcement Powder"
+  lore:
+    - "&7Right-click any valid block to reinforce it"
+    - ""
+    - "&fCompatible Materials:"
+    - "&7• &7Wood blocks &8(20% Resistance)"
+    - "&7• &7Stone blocks &8(30% Resistance)"
+    - "&7• &7Iron block &8(60% Resistance)"
+    - "&7• &7Gold block &8(80% Resistance)"
+    - "&7• &7Diamond block &8(90% Resistance)"
+  recipe:
+    shapeless: true
+    ingredients:
+      - IRON_INGOT
+      - STONE
+
+reinforcement_detector_helmet:
+  material: DIAMOND_HELMET
+  # Custom model data for resource pack support (1-9999)
+  custom_model_data: 2002
+  display_name: "&bReinforcement Detection Helmet"
+  lore:
+    - "&7Reveals nearby reinforced blocks when worn"
+    - ""
+    - "&fEffects when equipped:"
+    - "&7• &bShows reinforced blocks with particles"
+    - "&7• &7Range: 16 blocks"
+    - "&7• &7Updates every 2 seconds"
+    - ""
+    - "&8Advanced detection technology"

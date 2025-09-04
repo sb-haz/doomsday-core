@@ -1,0 +1,47 @@
+### Build outputs
+/build/
+/out/
+/target/
+
+### Gradle
+.gradle/
+/build.gradle.kts
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+
+### IntelliJ IDEA
+.idea/
+/*.iml
+*.ipr
+*.iws
+
+### VS Code
+.vscode/
+
+### Eclipse
+.settings/
+/.project
+.classpath
+
+### OS files
+.DS_Store
+Thumbs.db
+
+### Logs
+*.log
+
+### Temporary files
+*.tmp
+*.temp
+
+### Node (if you have frontend parts like web panels)
+node_modules/
+
+### Java
+*.class
+
+### Minecraft Plugin extras
+# Server run files (optional, if you test in a local server folder inside project)
+run/
+plugins/

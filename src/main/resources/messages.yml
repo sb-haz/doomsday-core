@@ -1,0 +1,92 @@
+# ========================================
+# MESSAGE CONFIGURATION
+# ========================================
+# All chat messages displayed by the plugin
+# Use & for color codes (e.g., &4 = red, &a = green)
+
+# Missile launch warnings
+missile:
+  launch: "&c⚠ &f{nation} &chas launched a missile!"
+
+# Anti-air defense messages
+antiair:
+  launched: "&6* &6&l{displayName} &fLaunched counter missle"
+  intercepted: "&6* &6&l{displayName} &fInterception &a&nsuccessful"
+  intercepted_by_player: "&6* &6&l{displayName} &fInterception &a&nsuccessful &7by &f{playerName}"
+  failed: "&6* &6&l{displayName} &fInterception &c&nfailed"
+  
+# Command messages
+commands:
+  usage:
+    rocket: "Usage: /r <rocketName> | /r r | /r c | /r o | /r powder [amount] | /r aa [cmd]"
+    antiair: "Usage: /r aa <status|reload|online|offline> [name]"
+  reload:
+    success: "&a🔄 All configurations reloaded!"
+    config_list:
+      - "&7• config.yml (rockets, explosions, anti-air)"
+      - "&7• custom_items.yml (reinforcement powder)" 
+      - "&7• messages.yml (chat messages)"
+  antiair:
+    status_header: "&6&l=== ANTI-AIR DEFENSE STATUS ==="
+    no_defenses: "&7No anti-air defenses configured"
+    unlimited_ammo: "&a✅ Anti-air defenses have unlimited ammo!"
+    online: "&a✅ Defense '{name}' brought online!"
+    offline: "&c❌ Defense '{name}' taken offline!"
+    unknown_command: "Unknown anti-air command: {command}"
+  permissions:
+    no_permission: "You don't have permission to {action}!"
+    players_only: "Players only!"
+
+# GUI messages
+gui:
+  nation_selection:
+    title: "Select Your Nation"
+    compass_title: "&6&lNation Selection"
+    compass_lore:
+      - "&7Choose your nation to join the fight!"
+      - ""
+      - "&7Current Nation: &f{current_nation}"
+      - "&7Can Switch: {can_switch}"
+      - ""
+      - "&eClick on a nation below to join!"
+    leave_button:
+      title: "&c&lLeave Current Nation"
+      lore:
+        - "&7Leave your current nation"
+        - "&cWarning: You may not be able to rejoin immediately!"
+        - ""
+        - "&eClick to leave {nation_name}"
+  nation_info:
+    citizens: "&7Citizens: &f{count}"
+    region: "&7Region: &f{region}"
+    missiles_header: "&6Available Missiles:"
+    missiles_none: "&7• &cNone configured"
+    disasters_header: "&cNatural Disasters:"
+    disaster_active: " &4(ACTIVE)"
+    current_nation: "&a✓ Current Nation"
+    teleport_hint: "&eClick to teleport to nation"
+    cannot_leave: "&cYou cannot leave this nation"
+    cannot_switch: "&cYou cannot switch nations"
+    join_hint: "&eClick to join this nation!"
+  confirmation:
+    title: "Join {nation_name}?"
+    yes_button:
+      title: "&a&lYES - Join Nation"
+      lore:
+        - "&7Click to join {nation_name}"
+        - "{leave_current}"
+        - "&7You will be teleported to the nation center"
+    no_button:
+      title: "&c&lNO - Cancel"
+      lore:
+        - "&7Return to nation selection"
+  messages:
+    joined_nation: "&eYou have joined &f{nation_name}&e!"
+    left_nation: "&eYou have left &f{nation_name}&e."
+    teleported: "&a§lTeleported to {nation_name} center!"
+    cannot_leave_cooldown: "&cYou cannot leave your current nation!"
+    cooldown_remaining: "&7Cooldown remaining: &f{hours}h {minutes}m"
+    not_in_nation: "&cYou are not in any nation!"
+    failed_to_join: "&cFailed to join {nation_name}!"
+    failed_to_leave: "&cFailed to leave your nation!"
+    nation_not_found: "&cNation not found!"

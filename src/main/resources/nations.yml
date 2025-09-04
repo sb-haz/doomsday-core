@@ -1,0 +1,186 @@
+# Nations Configuration
+# Define nations with their borders, disasters, and settings
+
+nations:
+  africa:
+    displayName: "Africa"
+    totalPlayers: 0
+    centerX: 0
+    centerZ: 0
+    missileTypes:
+      - "scud_africa"
+      - "fadjar_africa"
+    borders:
+      minX: -64
+      maxX: 64
+      minZ: -64
+      maxZ: 64
+      minY: -64
+      maxY: 320
+    disasters:
+      droughts:
+        enabled: true
+        minInterval: 1200  # 20 minutes in ticks (20 ticks = 1 second)
+        maxInterval: 3600  # 60 minutes in ticks
+        duration: 600      # 10 minutes duration
+        probability: 0.3   # 30% chance when checked
+        message: "&6[DISASTER] &cA severe drought has begun in Africa! Water sources are drying up..."
+      sandstorms:
+        enabled: true
+        minInterval: 1800  # 30 minutes
+        maxInterval: 4800  # 80 minutes
+        duration: 300      # 5 minutes duration
+        probability: 0.25  # 25% chance
+        message: "&6[DISASTER] &eA massive sandstorm is sweeping across Africa! Visibility is severely reduced..."
+
+  america:
+    displayName: "America"
+    totalPlayers: 0
+    centerX: -192
+    centerZ: 0
+    missileTypes:
+      - "trident_america"
+      - "tomahawk_america_north"
+      - "tomahawk_america_south"
+    borders:
+      minX: -256
+      maxX: -128
+      minZ: -64
+      maxZ: 64
+      minY: -64
+      maxY: 320
+    disasters:
+      meteor_showers:
+        enabled: true
+        minInterval: 2400  # 40 minutes
+        maxInterval: 6000  # 100 minutes
+        duration: 180      # 3 minutes duration
+        probability: 0.2   # 20% chance
+        message: "&6[DISASTER] &4Meteor shower detected over America! Take cover as burning rocks fall from the sky!"
+      wildfires:
+        enabled: true
+        minInterval: 1800  # 30 minutes
+        maxInterval: 4200  # 70 minutes
+        duration: 900      # 15 minutes duration
+        probability: 0.35  # 35% chance
+        message: "&6[DISASTER] &cWildfires are spreading rapidly across American forests! Evacuate the area immediately!"
+      tornadoes:
+        enabled: true
+        minInterval: 3600  # 60 minutes
+        maxInterval: 7200  # 120 minutes
+        duration: 120      # 2 minutes duration
+        probability: 0.1   # 10% chance (rare)
+        message: "&6[DISASTER] &8A powerful tornado has formed in America! Seek shelter immediately!"
+
+  europe:
+    displayName: "Europe"
+    totalPlayers: 0
+    centerX: 0
+    centerZ: 128
+    missileTypes:
+      - "stormshadow_europe"
+      - "scalp_europe"
+    borders:
+      minX: -64
+      maxX: 64
+      minZ: 64
+      maxZ: 192
+      minY: -64
+      maxY: 320
+    disasters:
+      flooding:
+        enabled: true
+        minInterval: 1500  # 25 minutes
+        maxInterval: 3000  # 50 minutes
+        duration: 1200     # 20 minutes duration
+        probability: 0.4   # 40% chance
+        message: "&6[DISASTER] &9Heavy rains are causing severe flooding across Europe! Rivers are overflowing!"
+      plagues:
+        enabled: true
+        minInterval: 4800  # 80 minutes
+        maxInterval: 9600  # 160 minutes
+        duration: 1800     # 30 minutes duration
+        probability: 0.15  # 15% chance (low)
+        message: "&6[DISASTER] &2A plague is slowly spreading through European settlements... Stay vigilant."
+      storms:
+        enabled: true
+        minInterval: 900   # 15 minutes
+        maxInterval: 2400  # 40 minutes
+        duration: 300      # 5 minutes duration
+        probability: 0.3   # 30% chance
+        message: "&6[DISASTER] &7Violent storms are lashing Europe! Lightning strikes threaten the land!"
+
+  antarctica:
+    displayName: "Antarctica"
+    totalPlayers: 0
+    centerX: 0
+    centerZ: -128
+    missileTypes:
+      - "v2_antarctica"
+      - "tsar_antarctica"
+    borders:
+      minX: -64
+      maxX: 64
+      minZ: -192
+      maxZ: -64
+      minY: -64
+      maxY: 320
+    disasters:
+      blizzards:
+        enabled: true
+        minInterval: 1200  # 20 minutes
+        maxInterval: 2400  # 40 minutes
+        duration: 600      # 10 minutes duration
+        probability: 0.5   # 50% chance
+        message: "&6[DISASTER] &fA fierce blizzard is engulfing Antarctica! Visibility is near zero!"
+      ice_storms:
+        enabled: true
+        minInterval: 2400  # 40 minutes
+        maxInterval: 4800  # 80 minutes
+        duration: 450      # 7.5 minutes duration
+        probability: 0.25  # 25% chance
+        message: "&6[DISASTER] &bDeadly ice storms are battering Antarctica! The cold is becoming unbearable!"
+
+  asia:
+    displayName: "Asia"
+    totalPlayers: 0
+    centerX: 128
+    centerZ: 0
+    missileTypes:
+      - "df21_asia"
+      - "iskander_asia"
+    borders:
+      minX: 64
+      maxX: 192
+      minZ: -64
+      maxZ: 64
+      minY: -64
+      maxY: 320
+    disasters:
+      earthquakes:
+        enabled: true
+        minInterval: 3600  # 60 minutes
+        maxInterval: 7200  # 120 minutes
+        duration: 180      # 3 minutes duration
+        probability: 0.2   # 20% chance
+        message: "&6[DISASTER] &4A massive earthquake is shaking Asia! The ground trembles beneath your feet!"
+      tsunamis:
+        enabled: true
+        minInterval: 4800  # 80 minutes
+        maxInterval: 9600  # 160 minutes
+        duration: 600      # 10 minutes duration
+        probability: 0.15  # 15% chance (rare)
+        message: "&6[DISASTER] &9A devastating tsunami is approaching Asian coastlines! Seek higher ground immediately!"
+      monsoons:
+        enabled: true
+        minInterval: 1800  # 30 minutes
+        maxInterval: 3600  # 60 minutes
+        duration: 900      # 15 minutes duration
+        probability: 0.3   # 30% chance
+        message: "&6[DISASTER] &7Heavy monsoon rains are flooding across Asia! Rivers are overflowing rapidly!"
+
+# Global disaster settings
+global:
+  enableDisasters: true
+  checkInterval: 600         # Check for disasters every 30 seconds (600 ticks)
+  debug: false              # Enable debug messages for disaster system
