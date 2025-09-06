@@ -6,36 +6,97 @@
 
 # Missile launch warnings
 missile:
-  launch: "&c⚠ &f{nation} &chas launched a missile!"
+  launch: "&c&l[MISSILE] &f{nation} &chas launched a missile!"
 
 # Anti-air defense messages
 antiair:
-  launched: "&6* &6&l{displayName} &fLaunched counter missle"
-  intercepted: "&6* &6&l{displayName} &fInterception &a&nsuccessful"
-  intercepted_by_player: "&6* &6&l{displayName} &fInterception &a&nsuccessful &7by &f{playerName}"
-  failed: "&6* &6&l{displayName} &fInterception &c&nfailed"
+  launched: "&3&l[DEFENSE] &6&l{displayName} &fLaunched counter missile"
+  intercepted: "&3&l[DEFENSE] &6&l{displayName} &fInterception &a&nsuccessful"
+  intercepted_by_player: "&3&l[DEFENSE] &6&l{displayName} &fInterception &a&nsuccessful &7by &f{playerName}"
+  failed: "&3&l[DEFENSE] &6&l{displayName} &fInterception &c&nfailed"
   
-# Command messages
+# Command messages with consistent styling
 commands:
-  usage:
-    rocket: "Usage: /r <rocketName> | /r r | /r c | /r o | /r powder [amount] | /r aa [cmd]"
-    antiair: "Usage: /r aa <status|reload|online|offline> [name]"
+  # New structured command system
+  rocket:
+    usage_header: "&c&l=== ROCKET COMMANDS ==="
+    launch_success: "&a✓ Missile launched: &f{missile_type}"
+    launch_failed: "&c✗ Failed to launch missile: {reason}"
+    unknown_missile: "&cUnknown missile type: &f{type}"
+    options_header: "&6&l=== ROCKET SYSTEM CONFIG ==="
+    powder_given: "&a&lGiven {amount}x Reinforcement Powder!"
+    powder_usage: "&7Right-click on blocks to reinforce them against explosions."
+    helmet_given: "&b&lGiven {amount}x Reinforcement Detection Helmet!"
+    helmet_usage: "&7Wear this helmet to see reinforced blocks with particles."
+    
+  antiair:
+    usage_header: "&9&l=== ANTI-AIR COMMANDS ==="
+    status_header: "&6&l=== ANTI-AIR DEFENSE STATUS ==="
+    no_defenses: "&7No anti-air defenses configured"
+    unlimited_ammo: "&a✅ Anti-air defenses reloaded and have unlimited ammo!"
+    online: "&a✅ Defense '&f{name}&a' brought online!"
+    offline: "&c❌ Defense '&f{name}&c' taken offline!"
+    unknown_command: "&cUnknown anti-air command: &f{command}"
+    list_header: "&6&l=== ANTI-AIR DEFENSE SYSTEMS ==="
+    
+  nations:
+    usage_header: "&6&l=== NATIONS COMMANDS ==="
+    main_menu_title: "&6&lDoomsday Nations - Main Menu"
+    nation_menu_title: "&6&l{nation} - Main Menu"
+    welcome_back: "&7Welcome back, citizen of &a{nation}&7!"
+    not_in_nation: "&7You are not currently in any nation."
+    join_success: "&a✓ Successfully joined &f{nation}&a!"
+    leave_success: "&e✓ You have left &f{nation}&e."
+    teleport_success: "&a✓ Teleported to &f{nation}&a center!"
+    nation_not_found: "&cNation not found: &f{nation}"
+    cannot_leave: "&cYou cannot leave your current nation!"
+    cooldown_remaining: "&7Cooldown remaining: &f{time}"
+    
+  seasons:
+    usage_header: "&e&l=== SEASON COMMANDS ==="
+    create_success: "&a✓ Created Season {id}: &f{name}"
+    activate_success: "&a✓ Activated Season {id} - The season is now LIVE!"
+    archive_success: "&a✓ Archived Season {id}"
+    current_header: "&e&l=== Season {id} ==="
+    no_season: "&7No season configured"
+    
+  disaster:
+    usage_header: "&4&l=== DISASTER COMMANDS ==="
+    trigger_success: "&a✓ Successfully triggered &c&l{disaster}&a in &6&l{nation}"
+    stop_success: "&a✓ Successfully stopped &c&l{disaster}&a in &6&l{nation}"
+    status_header: "&6&l=== DISASTER STATUS ==="
+    list_header: "&6&l=== AVAILABLE DISASTERS ==="
+    reload_success: "&a✓ Successfully reloaded disaster configuration!"
+    auto_enabled: "&a▶ Automatic disasters have been enabled!"
+    auto_disabled: "&c⏸ Automatic disasters have been disabled!"
+    
+  # Legacy support
+  legacy:
+    redirect_header: "&e⚠ Legacy command detected!"
+    redirect_message: "&7The /r command has been restructured for better organization:"
+    new_structure_header: "&aNew Command Structure:"
+    rocket_desc: "&e/rocket &7- Missile operations (staff only)"
+    antiair_desc: "&e/antiair &7- Anti-aircraft systems (staff only)"
+    nations_desc: "&e/nations &7- Nations system with GUI (players)"
+    seasons_desc: "&e/seasons &7- Season management (staff only)"
+    disaster_desc: "&e/disaster &7- Disaster management (staff only)"
+    player_hint: "&7For players: Use &f/nations &7for the main interface"
+    staff_hint: "&7For staff: Use the specific commands for each system"
+    
+  # General command responses
   reload:
     success: "&a🔄 All configurations reloaded!"
     config_list:
       - "&7• config.yml (rockets, explosions, anti-air)"
       - "&7• custom_items.yml (reinforcement powder)" 
       - "&7• messages.yml (chat messages)"
-  antiair:
-    status_header: "&6&l=== ANTI-AIR DEFENSE STATUS ==="
-    no_defenses: "&7No anti-air defenses configured"
-    unlimited_ammo: "&a✅ Anti-air defenses have unlimited ammo!"
-    online: "&a✅ Defense '{name}' brought online!"
-    offline: "&c❌ Defense '{name}' taken offline!"
-    unknown_command: "Unknown anti-air command: {command}"
+      - "&7• nations.yml (nations and disasters)"
+      - "&7• seasons.yml (season management)"
+  
   permissions:
-    no_permission: "You don't have permission to {action}!"
-    players_only: "Players only!"
+    no_permission: "&cYou don't have permission to {action}!"
+    players_only: "&cPlayers only!"
+    staff_only: "&cThis command is for staff only!"
 
 # GUI messages
 gui:
@@ -90,3 +151,57 @@ gui:
     failed_to_join: "&cFailed to join {nation_name}!"
     failed_to_leave: "&cFailed to leave your nation!"
     nation_not_found: "&cNation not found!"
+
+# Disaster messages
+disasters:
+  # America disasters
+  meteor_showers:
+    start: "&6&l[DISASTER] &4Meteor shower detected over {nation}! Take cover as burning rocks fall from the sky!"
+    end: "&2[RECOVERY] &7The meteor shower in {nation} has ended."
+    
+  wildfires:
+    start: "&6&l[DISASTER] &cWildfires are spreading across {nation} forests! Evacuate the area immediately!"
+    end: "&2[RECOVERY] &7The wildfires in {nation} have been contained."
+    
+  tornadoes:
+    start: "&6&l[DISASTER] &8A powerful tornado has formed in {nation}! Seek shelter immediately!"
+    end: "&2[RECOVERY] &7The tornado in {nation} has dissipated."
+    
+  # Europe disasters
+  flooding:
+    start: "&6&l[DISASTER] &9Heavy rains are causing severe flooding across {nation}! Rivers are overflowing!"
+    end: "&2[RECOVERY] &7The flooding in {nation} has receded."
+    
+  plagues:
+    start: "&6&l[DISASTER] &5A deadly plague has outbreak in {nation}! Avoid contact with infected!"
+    end: "&2[RECOVERY] &7The plague in {nation} has been contained."
+    infected: "&5&l[PLAGUE] &7You feel a creeping sickness..."
+    spreading: "&5&l[PLAGUE] &7The disease spreads to you from nearby infected!"
+    
+  storms:
+    start: "&6&l[DISASTER] &8Violent storms are raging across {nation}! Lightning strikes frequently!"
+    end: "&2[RECOVERY] &7The storms in {nation} have cleared."
+    
+  # Africa disasters
+  droughts:
+    start: "&6&l[DISASTER] &6A severe drought has begun in {nation}! Water sources are drying up..."
+    end: "&2[RECOVERY] &7The drought in {nation} has ended."
+    thirst: "&6&l[DROUGHT] &7The scorching heat drains your energy... You need water!"
+    dying: "&6&l[DROUGHT] &cYou are dying of thirst! Find water quickly!"
+    
+  # Antarctica disasters
+  blizzards:
+    start: "&6&l[DISASTER] &f&lA massive blizzard is engulfing {nation}! Visibility is zero!"
+    end: "&2[RECOVERY] &7The blizzard in {nation} has cleared."
+    
+  ice_storms:
+    start: "&6&l[DISASTER] &b&lA devastating ice storm is freezing {nation}! Ice crystals cut through the air!"
+    end: "&2[RECOVERY] &7The ice storm in {nation} has ended."
+    damage: "&b&l[ICE STORM] &7Sharp ice crystals cut through the air!"
+    
+  # Command messages
+  command:
+    auto_disabled: "&c⏸ Automatic disasters have been disabled!"
+    auto_enabled: "&a▶ Automatic disasters have been enabled!"
+    status_disabled: "&7Automatic disasters: &cDisabled"
+    status_enabled: "&7Automatic disasters: &aEnabled"

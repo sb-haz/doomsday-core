@@ -1,0 +1,192 @@
+# ========================================
+# ROCKET/MISSILE CONFIGURATION
+# ========================================
+
+# Sound radius for rocket/missile sounds
+soundRadius: 100
+
+# ========================================
+# MISSILE DEFINITIONS
+# ========================================
+rockets:
+
+  # 🇺🇸 America (West, -192,0)
+  trident_america:
+    displayName: "Trident II"
+    start:
+      x: -170
+      y: 80
+      z: 30
+    end:
+      x: 192
+      y: 70
+      z: 0
+    smokeOffset: 0.0
+    speed: 0.5
+    arcScale: 1.2
+    sound: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+    explosionType: "POWERFUL"
+
+  tomahawk_america_north:
+    displayName: "Tomahawk Cruise"
+    start:
+      x: -170
+      y: 80
+      z: -30
+    end:
+      x: 0
+      y: 70
+      z: 192
+    smokeOffset: 0.0
+    speed: 0.45
+    arcScale: 0.8
+    sound: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+    explosionType: "HORIZONTAL_SPREAD"
+
+  tomahawk_america_south:
+    displayName: "Tomahawk Cruise"
+    start:
+      x: -192
+      y: 80
+      z: 50
+    end:
+      x: 0
+      y: 70
+      z: -192
+    smokeOffset: 0.0
+    speed: 0.45
+    arcScale: 0.8
+    sound: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+    explosionType: "HORIZONTAL_SPREAD"
+
+  # 🇨🇳 Asia (East, +192,0)
+  df21_asia:
+    displayName: "DF-21"
+    start:
+      x: 170
+      y: 80
+      z: 20
+    end:
+      x: -192
+      y: 70
+      z: 0
+    smokeOffset: 0.0
+    speed: 0.4
+    arcScale: 1.0
+    sound: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+    explosionType: "BUNKER_BUSTER"
+
+  iskander_asia:
+    displayName: "Iskander"
+    start:
+      x: 170
+      y: 80
+      z: -20
+    end:
+      x: 0
+      y: 70
+      z: -192
+    smokeOffset: 0.0
+    speed: 0.35
+    arcScale: 0.9
+    sound: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+    explosionType: "DEFAULT"
+
+  # 🧊 Antarctica (North, 0,+192)
+  v2_antarctica:
+    displayName: "V-2 Rocket"
+    start:
+      x: 20
+      y: 80
+      z: 188
+    end:
+      x: 0
+      y: 70
+      z: -192
+    smokeOffset: 0.0
+    speed: 0.25
+    arcScale: 0.7
+    sound: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+    explosionType: "DEFAULT"
+
+  tsar_antarctica:
+    displayName: "Tsar Test"
+    start:
+      x: -20
+      y: 80
+      z: 200
+    end:
+      x: -192
+      y: 70
+      z: 0
+    smokeOffset: 0.0
+    speed: 0.22
+    arcScale: 1.1
+    sound: "ENTITY_WITHER_SPAWN"
+    explosionType: "NUCLEAR"
+
+  # 🌍 Africa (Centre, 0,0)
+  scud_africa:
+    displayName: "Scud-B"
+    start:
+      x: -2
+      y: 80
+      z: 0
+    end:
+      x: 192
+      y: 70
+      z: 0
+    smokeOffset: 0.0
+    speed: 0.3
+    arcScale: 0.7
+    sound: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+    explosionType: "DEFAULT"
+
+  fadjar_africa:
+    displayName: "Fadjar-110"
+    start:
+      x: -20
+      y: 80
+      z: -20
+    end:
+      x: -192
+      y: 70
+      z: 0
+    smokeOffset: 0.0
+    speed: 0.28
+    arcScale: 0.6
+    sound: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+    explosionType: "BUNKER_BUSTER"
+
+  # 🇪🇺 Europe (South, 0,-192)
+  stormshadow_europe:
+    displayName: "Storm Shadow"
+    start:
+      x: -20
+      y: 80
+      z: -200
+    end:
+      x: 192
+      y: 70
+      z: 0
+    smokeOffset: 0.0
+    speed: 0.38
+    arcScale: 0.9
+    sound: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+    explosionType: "DEFAULT"
+
+  scalp_europe:
+    displayName: "SCALP-EG"
+    start:
+      x: 20
+      y: 80
+      z: -220
+    end:
+      x: -192
+      y: 70
+      z: 0
+    smokeOffset: 0.0
+    speed: 0.36
+    arcScale: 0.8
+    sound: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+    explosionType: "HORIZONTAL_SPREAD"

@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
+import gg.doomsday.core.config.ConfigManager;
 import gg.doomsday.core.defense.ReinforcedBlockManager;
 
 public class ExplosionHandler implements Listener {
@@ -250,9 +251,9 @@ public class ExplosionHandler implements Listener {
             }
         }.runTaskTimer(plugin, 10L, 1L);
         
-        playRocketSound(snap, Sound.ENTITY_WITHER_SPAWN, 2.5f, 0.5f, plugin.getConfig().getDouble("soundRadius", 100.0));
-        playRocketSound(snap, Sound.ENTITY_GENERIC_EXPLODE, 3.5f, 0.3f, plugin.getConfig().getDouble("soundRadius", 100.0));
-        playRocketSound(snap, Sound.BLOCK_LAVA_POP, 2.0f, 0.8f, plugin.getConfig().getDouble("soundRadius", 100.0));
+        playRocketSound(snap, Sound.ENTITY_WITHER_SPAWN, 2.5f, 0.5f, ((gg.doomsday.core.DoomsdayCore) plugin).getConfigManager().getRocketsConfig().getDouble("soundRadius", 100.0));
+        playRocketSound(snap, Sound.ENTITY_GENERIC_EXPLODE, 3.5f, 0.3f, ((gg.doomsday.core.DoomsdayCore) plugin).getConfigManager().getRocketsConfig().getDouble("soundRadius", 100.0));
+        playRocketSound(snap, Sound.BLOCK_LAVA_POP, 2.0f, 0.8f, ((gg.doomsday.core.DoomsdayCore) plugin).getConfigManager().getRocketsConfig().getDouble("soundRadius", 100.0));
     }
 
     private void createNuclearExplosion(Location loc) {
@@ -322,8 +323,8 @@ public class ExplosionHandler implements Listener {
     }
     
     private void createNuclearFlash(Location center) {
-        int flashRadius = plugin.getConfig().getInt("nuclear.effects.flashRadius", 100);
-        int headShakeRadius = plugin.getConfig().getInt("nuclear.effects.headShakeRadius", 60);
+        int flashRadius = ((gg.doomsday.core.DoomsdayCore) plugin).getConfigManager().getNuclearConfig().getInt("nuclear.effects.flashRadius", 100);
+        int headShakeRadius = ((gg.doomsday.core.DoomsdayCore) plugin).getConfigManager().getNuclearConfig().getInt("nuclear.effects.headShakeRadius", 60);
         
         // Create blinding white flash for nearby players
         for (Player player : center.getWorld().getPlayers()) {
@@ -407,7 +408,7 @@ public class ExplosionHandler implements Listener {
     
     
     private void createShockwaveRings(Location center) {
-        int shockwaveRadius = plugin.getConfig().getInt("nuclear.effects.shockwaveRadius", 80);
+        int shockwaveRadius = ((gg.doomsday.core.DoomsdayCore) plugin).getConfigManager().getNuclearConfig().getInt("nuclear.effects.shockwaveRadius", 80);
         
         new BukkitRunnable() {
             double currentRadius = 5.0;
@@ -467,7 +468,7 @@ public class ExplosionHandler implements Listener {
     }
     
     private void createFireSpread(Location center) {
-        int fireRadius = plugin.getConfig().getInt("nuclear.effects.fireSpreadRadius", 35);
+        int fireRadius = ((gg.doomsday.core.DoomsdayCore) plugin).getConfigManager().getNuclearConfig().getInt("nuclear.effects.fireSpreadRadius", 35);
         
         // Enhanced fire spread with more fires
         new BukkitRunnable() {
@@ -671,8 +672,8 @@ public class ExplosionHandler implements Listener {
     }
     
     private void createNuclearCrater(Location center) {
-        int craterDepth = plugin.getConfig().getInt("nuclear.crater.depth", 15);
-        int craterRadius = plugin.getConfig().getInt("nuclear.crater.radius", 25);
+        int craterDepth = ((gg.doomsday.core.DoomsdayCore) plugin).getConfigManager().getNuclearConfig().getInt("nuclear.crater.depth", 15);
+        int craterRadius = ((gg.doomsday.core.DoomsdayCore) plugin).getConfigManager().getNuclearConfig().getInt("nuclear.crater.radius", 25);
         
         // Create crater using multiple overlapping explosions in a bowl formation
         new BukkitRunnable() {
@@ -769,15 +770,15 @@ public class ExplosionHandler implements Listener {
     
     private void createStaticMushroomCloud(Location center) {
         // Get config values
-        int cloudDuration = plugin.getConfig().getInt("nuclear.cloudDuration", 15);
-        int particleDuration = plugin.getConfig().getInt("nuclear.particleDuration", 6);
-        int baseRadius = plugin.getConfig().getInt("nuclear.cloud.baseRadius", 20);
-        int stemHeight = plugin.getConfig().getInt("nuclear.cloud.stemHeight", 45);
-        int capHeight = plugin.getConfig().getInt("nuclear.cloud.capHeight", 35);
-        double cloudDensity = plugin.getConfig().getDouble("nuclear.cloud.density", 0.3);
-        int innerRadius = plugin.getConfig().getInt("nuclear.rings.innerRadius", 25);
-        int outerRadius = plugin.getConfig().getInt("nuclear.rings.outerRadius", 45);
-        double ringDensity = plugin.getConfig().getDouble("nuclear.rings.density", 0.5);
+        int cloudDuration = ((gg.doomsday.core.DoomsdayCore) plugin).getConfigManager().getNuclearConfig().getInt("nuclear.cloudDuration", 15);
+        int particleDuration = ((gg.doomsday.core.DoomsdayCore) plugin).getConfigManager().getNuclearConfig().getInt("nuclear.particleDuration", 6);
+        int baseRadius = ((gg.doomsday.core.DoomsdayCore) plugin).getConfigManager().getNuclearConfig().getInt("nuclear.cloud.baseRadius", 20);
+        int stemHeight = ((gg.doomsday.core.DoomsdayCore) plugin).getConfigManager().getNuclearConfig().getInt("nuclear.cloud.stemHeight", 45);
+        int capHeight = ((gg.doomsday.core.DoomsdayCore) plugin).getConfigManager().getNuclearConfig().getInt("nuclear.cloud.capHeight", 35);
+        double cloudDensity = ((gg.doomsday.core.DoomsdayCore) plugin).getConfigManager().getNuclearConfig().getDouble("nuclear.cloud.density", 0.3);
+        int innerRadius = ((gg.doomsday.core.DoomsdayCore) plugin).getConfigManager().getNuclearConfig().getInt("nuclear.rings.innerRadius", 25);
+        int outerRadius = ((gg.doomsday.core.DoomsdayCore) plugin).getConfigManager().getNuclearConfig().getInt("nuclear.rings.outerRadius", 45);
+        double ringDensity = ((gg.doomsday.core.DoomsdayCore) plugin).getConfigManager().getNuclearConfig().getDouble("nuclear.rings.density", 0.5);
         
         java.util.List<BlockDisplay> allBlocks = new java.util.ArrayList<>();
         BlockData whiteWool = Material.WHITE_WOOL.createBlockData();

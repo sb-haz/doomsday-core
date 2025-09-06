@@ -1,6 +1,7 @@
 package gg.doomsday.core.messaging;
 
 import gg.doomsday.core.DoomsdayCore;
+import gg.doomsday.core.config.ConfigManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -38,10 +39,11 @@ public class MessagingManager {
     }
     
     public void loadConfiguration() {
-        // Load messaging configuration from config.yml
-        missileGlobal = plugin.getConfig().getBoolean("messaging.missiles.global", true);
-        antiairGlobal = plugin.getConfig().getBoolean("messaging.antiair.global", false);
-        disasterGlobal = plugin.getConfig().getBoolean("messaging.disasters.global", false);
+        // Load messaging configuration from messaging.yml
+        ConfigManager configManager = ((DoomsdayCore) plugin).getConfigManager();
+        missileGlobal = configManager.getMessagingConfig().getBoolean("messaging.missiles.global", true);
+        antiairGlobal = configManager.getMessagingConfig().getBoolean("messaging.antiair.global", false);
+        disasterGlobal = configManager.getMessagingConfig().getBoolean("messaging.disasters.global", false);
         
         plugin.getLogger().info("Messaging Manager loaded - Missiles: " + (missileGlobal ? "global" : "nation-specific") + 
                                ", Anti-air: " + (antiairGlobal ? "global" : "nation-specific") +

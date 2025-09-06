@@ -1,6 +1,7 @@
 package gg.doomsday.core.nations;
 
 import gg.doomsday.core.DoomsdayCore;
+import gg.doomsday.core.managers.MessageManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -20,6 +21,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class NationManager {
     private final JavaPlugin plugin;
     private final Map<String, Nation> nations;
+    private final MessageManager messageManager;
     private FileConfiguration nationsConfig;
     private boolean enableDisasters;
     private int checkInterval;
@@ -31,6 +33,7 @@ public class NationManager {
     public NationManager(JavaPlugin plugin) {
         this.plugin = plugin;
         this.nations = new HashMap<>();
+        this.messageManager = new MessageManager(plugin);
         loadConfiguration();
         startDisasterChecker();
     }
@@ -213,7 +216,10 @@ public class NationManager {
     private void triggerDisaster(Nation nation, Disaster disaster) {
         disaster.start();
         
-        String message = ChatColor.translateAlternateColorCodes('&', disaster.getMessage());
+        // Get message from messages.yml
+        String messageKey = "disasters." + disaster.getId() + ".start";
+        String message = messageManager.getMessage(messageKey)
+            .replace("{nation}", nation.getDisplayName());
         
         // Use configurable messaging system
         if (plugin instanceof DoomsdayCore) {
@@ -240,12 +246,14 @@ public class NationManager {
     }
 
     private void announceDisasterEnd(Nation nation, Disaster disaster) {
-        String endMessage = ChatColor.GREEN + "[RECOVERY] " + ChatColor.GRAY + 
-            "The " + disaster.getId().replace("_", " ") + " in " + nation.getDisplayName() + " has ended.";
+        // Get end message from messages.yml
+        String messageKey = "disasters." + disaster.getId() + ".end";
+        String endMessage = messageManager.getMessage(messageKey)
+            .replace("{nation}", nation.getDisplayName());
         
         // Use configurable messaging system for end messages too
-        if (plugin instanceof gg.doomsday.core.DoomsdayCore) {
-            gg.doomsday.core.DoomsdayCore doomsdayCore = (gg.doomsday.core.DoomsdayCore) plugin;
+        if (plugin instanceof DoomsdayCore) {
+            DoomsdayCore doomsdayCore = (DoomsdayCore) plugin;
             NationBorders borders = nation.getBorders();
             Location centerLoc = new Location(
                 Bukkit.getWorlds().get(0), // Assume main world
@@ -324,5 +332,51 @@ public class NationManager {
         } catch (Exception e) {
             plugin.getLogger().severe("Could not save nations.yml: " + e.getMessage());
         }
+    }
+
+    /**
+     * Manually trigger a disaster (for admin commands)
+     */
+    public void manuallyTriggerDisaster(Nation nation, Disaster disaster) {
+        triggerDisaster(nation, disaster);
+    }
+
+    /**
+     * Manually stop a disaster (for admin commands)
+     */
+    public void manuallyStopDisaster(Nation nation, Disaster disaster) {
+        announceDisasterEnd(nation, disaster);
+    }
+
+    /**
+     * Enable automatic disasters
+     */
+    public void enableAutomaticDisasters() {
+        if (!enableDisasters) {
+            enableDisasters = true;
+            startDisasterChecker();
+            plugin.getLogger().info("Automatic disasters enabled");
+        }
+    }
+
+    /**
+     * Disable automatic disasters
+     */
+    public void disableAutomaticDisasters() {
+        if (enableDisasters) {
+            enableDisasters = false;
+            if (disasterTask != null) {
+                disasterTask.cancel();
+                disasterTask = null;
+            }
+            plugin.getLogger().info("Automatic disasters disabled");
+        }
+    }
+
+    /**
+     * Check if automatic disasters are enabled
+     */
+    public boolean areAutomaticDisastersEnabled() {
+        return enableDisasters;
     }
 }

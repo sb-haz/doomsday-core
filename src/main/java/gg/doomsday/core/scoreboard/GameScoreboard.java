@@ -12,6 +12,7 @@ import gg.doomsday.core.nations.NationManager;
 import gg.doomsday.core.nations.NationPlayerManager;
 import gg.doomsday.core.seasons.Season;
 import gg.doomsday.core.seasons.SeasonManager;
+import gg.doomsday.core.utils.NationColors;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -172,15 +173,15 @@ public class GameScoreboard {
     private ChatColor getNationColor(String nationId) {
         switch (nationId.toLowerCase()) {
             case "america":
-                return ChatColor.BLUE;
-            case "europe":
-                return ChatColor.GREEN;
+                return ChatColor.AQUA; // &b
             case "africa":
-                return ChatColor.GOLD;
-            case "asia":
-                return ChatColor.RED;
+                return ChatColor.GOLD; // &6
             case "antarctica":
-                return ChatColor.WHITE;
+                return ChatColor.WHITE; // &f
+            case "europe":
+                return ChatColor.GREEN; // &a
+            case "asia":
+                return ChatColor.YELLOW; // &e
             default:
                 return ChatColor.GRAY;
         }

@@ -8,11 +8,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import gg.doomsday.core.config.ConfigManager;
 import gg.doomsday.core.explosions.RocketLauncher;
 import gg.doomsday.core.managers.MessageManager;
 import gg.doomsday.core.messaging.MessagingManager;
 import gg.doomsday.core.nations.Nation;
 import gg.doomsday.core.nations.NationManager;
+import gg.doomsday.core.utils.NationColors;
 import gg.doomsday.core.DoomsdayCore;
 
 /**
@@ -47,7 +49,7 @@ public class MissileService {
         }
         
         // Get rocket configuration
-        ConfigurationSection rocket = plugin.getConfig().getConfigurationSection("rockets." + rocketKey);
+        ConfigurationSection rocket = ((DoomsdayCore) plugin).getConfigManager().getRocketsConfig().getConfigurationSection("rockets." + rocketKey);
         if (rocket == null) {
             player.sendMessage("❌ Rocket '" + rocketKey + "' not found in config!");
             return false;
@@ -123,8 +125,8 @@ public class MissileService {
         rocketLauncher.spawnRocket(start, end, smokeOffset, speed, arcScale, soundStr, explosionTypeStr);
         
         // Send notifications to all players
-        String nationName = getNationFromRocketKey(rocketKey);
-        broadcastMissileLaunch(world, nationName, start);
+        String nationId = getNationIdFromRocketKey(rocketKey);
+        broadcastMissileLaunch(world, nationId, start);
         
         // Send confirmation to launching player
         player.sendMessage("§a§l🚀 " + displayName + " LAUNCHED!");
@@ -136,11 +138,12 @@ public class MissileService {
     /**
      * Broadcast missile launch warning using the configurable messaging system
      */
-    private void broadcastMissileLaunch(World world, String nationName, Location launchLocation) {
-        String launchMsg = messageManager.getMessage("missile.launch", "nation", nationName);
+    private void broadcastMissileLaunch(World world, String nationId, Location launchLocation) {
+        String coloredNationName = NationColors.getColoredNationName(nationId);
+        String launchMsg = messageManager.getMessage("missile.launch", "nation", coloredNationName);
         
         // Get the launching nation object
-        Nation launchingNation = getLaunchingNationFromName(nationName);
+        Nation launchingNation = getLaunchingNationFromName(nationId);
         
         // Use the new MessagingManager for configurable messaging
         DoomsdayCore doomsdayCore = (DoomsdayCore) plugin;
@@ -194,13 +197,13 @@ public class MissileService {
     /**
      * Determine which nation a missile belongs to based on its key
      */
-    private String getNationFromRocketKey(String rocketKey) {
-        if (rocketKey.contains("america")) return "AMERICA";
-        if (rocketKey.contains("europe")) return "EUROPE";
-        if (rocketKey.contains("africa")) return "AFRICA";
-        if (rocketKey.contains("asia")) return "ASIA";
-        if (rocketKey.contains("antarctica")) return "ANTARCTICA";
-        return "UNKNOWN";
+    private String getNationIdFromRocketKey(String rocketKey) {
+        if (rocketKey.contains("america")) return "america";
+        if (rocketKey.contains("europe")) return "europe";
+        if (rocketKey.contains("africa")) return "africa";
+        if (rocketKey.contains("asia")) return "asia";
+        if (rocketKey.contains("antarctica")) return "antarctica";
+        return "unknown";
     }
     
     /**
@@ -230,7 +233,7 @@ public class MissileService {
      * Get missile information for GUI display
      */
     public MissileInfo getMissileInfo(String rocketKey) {
-        ConfigurationSection rocket = plugin.getConfig().getConfigurationSection("rockets." + rocketKey);
+        ConfigurationSection rocket = ((DoomsdayCore) plugin).getConfigManager().getRocketsConfig().getConfigurationSection("rockets." + rocketKey);
         if (rocket == null) return null;
         
         return new MissileInfo(

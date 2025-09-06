@@ -5,6 +5,7 @@ import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.BlockDisplay;
 import org.bukkit.plugin.java.JavaPlugin;
+import gg.doomsday.core.config.ConfigManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,16 +17,26 @@ public class AntiAirDefenseManager {
     public AntiAirDefenseManager(JavaPlugin plugin) {
         this.plugin = plugin;
         this.defenses = new ArrayList<>();
-        loadDefensesFromConfig();
+        try {
+            loadDefensesFromConfig();
+        } catch (Exception e) {
+            plugin.getLogger().warning("Failed to load anti-air configuration: " + e.getMessage());
+        }
     }
 
     private void loadDefensesFromConfig() {
         List<AntiAirDefense> oldDefenses = new ArrayList<>(defenses);
         defenses.clear();
         
-        ConfigurationSection defensesSection = plugin.getConfig().getConfigurationSection("antiair.defenses");
-        if (defensesSection == null) {
-            plugin.getLogger().info("No anti-air defenses configured");
+        ConfigurationSection defensesSection;
+        try {
+            defensesSection = ((gg.doomsday.core.DoomsdayCore) plugin).getConfigManager().getAntiairConfig().getConfigurationSection("antiair.defenses");
+            if (defensesSection == null) {
+                plugin.getLogger().info("No anti-air defenses configured");
+                return;
+            }
+        } catch (Exception e) {
+            plugin.getLogger().warning("Failed to access anti-air configuration: " + e.getMessage());
             return;
         }
 

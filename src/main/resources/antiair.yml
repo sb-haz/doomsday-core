@@ -1,0 +1,180 @@
+# ========================================
+# ANTI-AIR DEFENSE CONFIGURATION
+# ========================================
+
+antiair:
+  defenses:
+
+    # 🇺🇸 America (West, -192,0)
+    patriot_america_border:
+      displayName: "Patriot Battery (USA - Core)"
+      location:
+        x: -192
+        y: 80
+        z: 0
+      range: 160
+      accuracy: 0.95
+      interceptorSpeed: 9.0
+      reloadTime: 0.1
+      startupTime: 0.8
+      automatic: true
+
+    aegis_america_north:
+      displayName: "Aegis System (USA - North)"
+      location:
+        x: -220
+        y: 80
+        z: 40
+      range: 180
+      accuracy: 0.92
+      interceptorSpeed: 8.5
+      reloadTime: 0.15
+      startupTime: 1.0
+      automatic: true
+
+    aegis_america_south:
+      displayName: "Aegis System (USA - South)"
+      location:
+        x: -220
+        y: 80
+        z: -40
+      range: 180
+      accuracy: 0.92
+      interceptorSpeed: 8.5
+      reloadTime: 0.15
+      startupTime: 1.0
+      automatic: true
+
+    core_defense_america:
+      displayName: "Core Defense (USA)"
+      location:
+        x: -240
+        y: 80
+        z: 0
+      range: 120
+      accuracy: 0.90
+      interceptorSpeed: 8.0
+      reloadTime: 0.2
+      startupTime: 1.2
+      automatic: true
+
+    # 🇨🇳 Asia (East, +192,0)
+    hq9_asia_border:
+      displayName: "HQ-9 SAM (Asia - Border)"
+      location:
+        x: 192
+        y: 80
+        z: 0
+      range: 140
+      accuracy: 0.90
+      interceptorSpeed: 8.0
+      reloadTime: 0.2
+      startupTime: 1.0
+      automatic: true
+
+    s400_asia_core:
+      displayName: "S-400 Triumph (Asia - Core)"
+      location:
+        x: 220
+        y: 80
+        z: 36
+      range: 150
+      accuracy: 0.88
+      interceptorSpeed: 7.8
+      reloadTime: 0.25
+      startupTime: 1.2
+      automatic: true
+
+    s400_asia_support:
+      displayName: "S-400 Triumph (Asia - Support)"
+      location:
+        x: 220
+        y: 80
+        z: -36
+      range: 150
+      accuracy: 0.88
+      interceptorSpeed: 7.8
+      reloadTime: 0.25
+      startupTime: 1.2
+      automatic: true
+
+    # 🧊 Antarctica (North, 0,+192)
+    flak_antarctica_core:
+      displayName: "WW2 Flak Battery (Antarctica)"
+      location:
+        x: 0
+        y: 80
+        z: 192
+      range: 50
+      accuracy: 0.65
+      interceptorSpeed: 5.0
+      reloadTime: 0.6
+      startupTime: 2.5
+      automatic: false
+
+    iris_antarctica_support:
+      displayName: "IRIS-T SLM (Antarctica - Support)"
+      location:
+        x: -32
+        y: 80
+        z: 160
+      range: 100
+      accuracy: 0.80
+      interceptorSpeed: 7.0
+      reloadTime: 0.3
+      startupTime: 1.6
+      automatic: false
+
+    # 🌍 Africa (Centre, 0,0)
+    kub_africa_core:
+      displayName: "Kub System (Africa - Core)"
+      location:
+        x: 0
+        y: 80
+        z: 0
+      range: 80
+      accuracy: 0.75
+      interceptorSpeed: 6.5
+      reloadTime: 0.4
+      startupTime: 2.0
+      automatic: false
+
+    zsu_africa_support:
+      displayName: "ZSU-23 Shilka (Africa - Support)"
+      location:
+        x: -40
+        y: 80
+        z: 20
+      range: 60
+      accuracy: 0.70
+      interceptorSpeed: 6.0
+      reloadTime: 0.5
+      startupTime: 2.2
+      automatic: false
+
+    # 🇪🇺 Europe (South, 0,-192)
+    s300_europe_core:
+      displayName: "S-300 Battery (Europe - Core)"
+      location:
+        x: 0
+        y: 80
+        z: -192
+      range: 120
+      accuracy: 0.85
+      interceptorSpeed: 7.5
+      reloadTime: 0.25
+      startupTime: 1.5
+      automatic: false
+
+    iris_europe_support:
+      displayName: "IRIS-T SLM (Europe - Support)"
+      location:
+        x: 20
+        y: 80
+        z: -160
+      range: 100
+      accuracy: 0.80
+      interceptorSpeed: 7.0
+      reloadTime: 0.3
+      startupTime: 1.6
+      automatic: false

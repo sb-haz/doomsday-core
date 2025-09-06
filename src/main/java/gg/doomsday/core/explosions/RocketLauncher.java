@@ -15,6 +15,7 @@ import org.bukkit.util.Vector;
 import org.joml.AxisAngle4f;
 import org.joml.Vector3f;
 
+import gg.doomsday.core.config.ConfigManager;
 import gg.doomsday.core.defense.AntiAirDefenseManager;
 import gg.doomsday.core.defense.ReinforcedBlockManager;
 
@@ -66,7 +67,7 @@ public class RocketLauncher {
 
         Vector v0 = disp.clone().subtract(gVec.clone().multiply(0.5 * T * T)).multiply(1.0 / T);
 
-        final double soundRadius = plugin.getConfig().getDouble("soundRadius", 100.0);
+        final double soundRadius = ((gg.doomsday.core.DoomsdayCore) plugin).getConfigManager().getRocketsConfig().getDouble("soundRadius", 100.0);
 
         playRocketSound(launchPos, launchSound, 2.0f, 0.9f, soundRadius);
 

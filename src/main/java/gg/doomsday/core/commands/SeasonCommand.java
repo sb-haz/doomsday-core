@@ -27,7 +27,7 @@ public class SeasonCommand implements CommandExecutor, TabCompleter {
     
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!command.getName().equalsIgnoreCase("season")) {
+        if (!command.getName().equalsIgnoreCase("seasons")) {
             return false;
         }
         
@@ -60,8 +60,8 @@ public class SeasonCommand implements CommandExecutor, TabCompleter {
         }
         
         if (args.length < 2) {
-            sender.sendMessage(ChatColor.RED + "Usage: /season create <id>");
-            sender.sendMessage(ChatColor.GRAY + "Example: /season create 2");
+            sender.sendMessage(ChatColor.RED + "Usage: /seasons create <id>");
+            sender.sendMessage(ChatColor.GRAY + "Example: /seasons create 2");
             return true;
         }
         
@@ -78,7 +78,7 @@ public class SeasonCommand implements CommandExecutor, TabCompleter {
                 sender.sendMessage(ChatColor.GRAY + "Start: " + startAt);
                 sender.sendMessage(ChatColor.GRAY + "End: " + endAt);
                 sender.sendMessage(ChatColor.GRAY + "Status: PLANNED");
-                sender.sendMessage(ChatColor.YELLOW + "Use '/season activate' to activate when ready");
+                sender.sendMessage(ChatColor.YELLOW + "Use '/seasons activate' to activate when ready");
             } else {
                 sender.sendMessage(ChatColor.RED + "Failed to create season!");
             }
@@ -100,7 +100,7 @@ public class SeasonCommand implements CommandExecutor, TabCompleter {
         
         Season currentSeason = seasonManager.getCurrentSeason();
         if (currentSeason == null) {
-            sender.sendMessage(ChatColor.RED + "No season configured! Use '/season create' first.");
+            sender.sendMessage(ChatColor.RED + "No season configured! Use '/seasons create' first.");
             return true;
         }
         
@@ -193,12 +193,12 @@ public class SeasonCommand implements CommandExecutor, TabCompleter {
     
     private void showUsage(CommandSender sender) {
         sender.sendMessage(ChatColor.GOLD + "=== Season Commands ===");
-        sender.sendMessage(ChatColor.YELLOW + "/season current" + ChatColor.GRAY + " - Show current season info");
+        sender.sendMessage(ChatColor.YELLOW + "/seasons current" + ChatColor.GRAY + " - Show current season info");
         
         if (sender.hasPermission("season.admin")) {
-            sender.sendMessage(ChatColor.YELLOW + "/season create <id>" + ChatColor.GRAY + " - Create new season");
-            sender.sendMessage(ChatColor.YELLOW + "/season activate" + ChatColor.GRAY + " - Activate planned season");
-            sender.sendMessage(ChatColor.YELLOW + "/season archive" + ChatColor.GRAY + " - Archive current season");
+            sender.sendMessage(ChatColor.YELLOW + "/seasons create <id>" + ChatColor.GRAY + " - Create new season");
+            sender.sendMessage(ChatColor.YELLOW + "/seasons activate" + ChatColor.GRAY + " - Activate planned season");
+            sender.sendMessage(ChatColor.YELLOW + "/seasons archive" + ChatColor.GRAY + " - Archive current season");
         }
     }
     

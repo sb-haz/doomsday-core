@@ -1,0 +1,19 @@
+# ========================================
+# MESSAGING CONFIGURATION
+# ========================================
+
+messaging:
+  # Missile launch notifications
+  missiles:
+    global: true           # If true, all players see missile launches
+    radius: 500           # If global=false, only players within this radius see the message
+    
+  # Anti-air defense notifications  
+  antiair:
+    global: false         # If true, all players see anti-air activity
+    radius: 150          # If global=false, only players within this radius see the message
+    
+  # Natural disaster notifications
+  disasters:
+    global: false         # If true, all players see disaster announcements
+    radius: 200          # If global=false, only players within this radius see the message

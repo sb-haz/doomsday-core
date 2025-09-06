@@ -1,0 +1,74 @@
+# ========================================
+# REINFORCED BLOCKS CONFIGURATION
+# ========================================
+# Reinforced blocks system - blocks that have been strengthened with reinforcement powder
+
+reinforcement:
+  # Valid block types that can be reinforced
+  validBlocks:
+    # Wood blocks
+    - OAK_PLANKS
+    - BIRCH_PLANKS
+    - SPRUCE_PLANKS
+    - JUNGLE_PLANKS
+    - ACACIA_PLANKS
+    - DARK_OAK_PLANKS
+    - MANGROVE_PLANKS
+    - CHERRY_PLANKS
+    - BAMBOO_PLANKS
+    
+    # Stone blocks
+    - STONE
+    - STONE_BRICKS
+    - CRACKED_STONE_BRICKS
+    - MOSSY_STONE_BRICKS
+    - COBBLESTONE
+    - BRICKS
+    
+    # Metal blocks
+    - IRON_BLOCK
+    - GOLD_BLOCK
+    - DIAMOND_BLOCK
+
+  # Explosion resistance for reinforced blocks (0.0-1.0)
+  # Only reinforced blocks get these resistance values
+  resistance:
+    # Wood blocks (20% Resistance)
+    OAK_PLANKS: 0.20
+    BIRCH_PLANKS: 0.20
+    SPRUCE_PLANKS: 0.20
+    JUNGLE_PLANKS: 0.20
+    ACACIA_PLANKS: 0.20
+    DARK_OAK_PLANKS: 0.20
+    MANGROVE_PLANKS: 0.20
+    CHERRY_PLANKS: 0.20
+    BAMBOO_PLANKS: 0.20
+    
+    # Stone blocks (30% Resistance)
+    STONE: 0.30
+    STONE_BRICKS: 0.30
+    CRACKED_STONE_BRICKS: 0.30
+    MOSSY_STONE_BRICKS: 0.30
+    COBBLESTONE: 0.30
+    BRICKS: 0.30
+    
+    # Metal blocks
+    IRON_BLOCK: 0.60    # Iron block (60% Resistance)
+    GOLD_BLOCK: 0.80    # Gold block (80% Resistance)
+    DIAMOND_BLOCK: 0.90 # Diamond block (90% Resistance)
+
+# ========================================
+# LEGACY BLOCK RESISTANCE (DEPRECATED)
+# ========================================
+# This section is deprecated - now only reinforced blocks have resistance
+# Keeping for backward compatibility but values are ignored
+blockResistance:
+  STONE_BRICKS: 0.0
+  CRACKED_STONE_BRICKS: 0.0
+  MOSSY_STONE_BRICKS: 0.0
+  COBBLESTONE: 0.0
+  STONE: 0.0
+  OBSIDIAN: 0.95
+  BEDROCK: 1.0
+  IRON_BLOCK: 0.0
+  DIAMOND_BLOCK: 0.0

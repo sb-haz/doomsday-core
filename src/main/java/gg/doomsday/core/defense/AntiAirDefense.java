@@ -326,6 +326,7 @@ public class AntiAirDefense {
     }
 
     public String getName() { return name; }
+    public String getDisplayName() { return displayName; }
     public Location getLocation() { return location.clone(); }
     public double getRange() { return range; }
     public double getAccuracy() { return accuracy; }
@@ -333,6 +334,7 @@ public class AntiAirDefense {
     public double getReloadTime() { return reloadTime; }
     public double getStartupTime() { return startupTime; }
     public boolean isOperational() { return operational; }
+    public boolean isAutomatic() { return automatic; }
     
     public void setOperational(boolean operational) { this.operational = operational; }
     

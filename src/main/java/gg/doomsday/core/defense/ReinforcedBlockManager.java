@@ -8,9 +8,12 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import gg.doomsday.core.config.ConfigManager;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -29,13 +32,27 @@ public class ReinforcedBlockManager {
     public ReinforcedBlockManager(JavaPlugin plugin) {
         this.plugin = plugin;
         this.dataFile = new File(plugin.getDataFolder(), "reinforced_blocks.yml");
-        loadConfiguration();
+        // Initialize with empty lists/maps to prevent NPE
+        this.validBlocks = new ArrayList<>();
+        this.resistanceValues = new HashMap<>();
+        // Try to load configuration - if it fails, we'll use defaults
+        try {
+            loadConfiguration();
+        } catch (Exception e) {
+            plugin.getLogger().warning("Failed to load reinforcement configuration, using defaults: " + e.getMessage());
+            loadDefaultConfiguration();
+        }
         loadReinforcedBlocks();
     }
     
     private void loadConfiguration() {
-        FileConfiguration config = plugin.getConfig();
-        validBlocks = config.getStringList("reinforcement.validBlocks");
+        FileConfiguration config = ((gg.doomsday.core.DoomsdayCore) plugin).getConfigManager().getReinforcementConfig();
+        
+        // Load valid blocks
+        List<String> loadedBlocks = config.getStringList("reinforcement.validBlocks");
+        if (loadedBlocks != null && !loadedBlocks.isEmpty()) {
+            validBlocks = loadedBlocks;
+        }
         
         // Load resistance values
         resistanceValues = new HashMap<>();
@@ -47,6 +64,42 @@ public class ReinforcedBlockManager {
         
         plugin.getLogger().info("Loaded " + validBlocks.size() + " valid reinforcement materials");
         plugin.getLogger().info("Loaded " + resistanceValues.size() + " resistance values");
+    }
+    
+    private void loadDefaultConfiguration() {
+        // Load basic defaults if configuration fails
+        validBlocks.clear();
+        validBlocks.addAll(Arrays.asList(
+            "STONE", "STONE_BRICKS", "COBBLESTONE", "BRICKS",
+            "OAK_PLANKS", "BIRCH_PLANKS", "SPRUCE_PLANKS",
+            "IRON_BLOCK", "GOLD_BLOCK", "DIAMOND_BLOCK"
+        ));
+        
+        resistanceValues.clear();
+        // Basic resistance values
+        resistanceValues.put("STONE", 0.30);
+        resistanceValues.put("STONE_BRICKS", 0.30);
+        resistanceValues.put("COBBLESTONE", 0.30);
+        resistanceValues.put("BRICKS", 0.30);
+        resistanceValues.put("OAK_PLANKS", 0.20);
+        resistanceValues.put("BIRCH_PLANKS", 0.20);
+        resistanceValues.put("SPRUCE_PLANKS", 0.20);
+        resistanceValues.put("IRON_BLOCK", 0.60);
+        resistanceValues.put("GOLD_BLOCK", 0.80);
+        resistanceValues.put("DIAMOND_BLOCK", 0.90);
+        
+        plugin.getLogger().info("Loaded default reinforcement configuration");
+    }
+    
+    /**
+     * Public method to reload configuration
+     */
+    public void reloadConfiguration() {
+        try {
+            loadConfiguration();
+        } catch (Exception e) {
+            plugin.getLogger().warning("Failed to reload reinforcement configuration, keeping current settings: " + e.getMessage());
+        }
     }
     
     public boolean isValidBlock(Material material) {

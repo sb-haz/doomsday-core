@@ -1,6 +1,11 @@
 # Nations Configuration
 # Define nations with their borders, disasters, and settings
 
+global:
+  enableDisasters: true
+  checkInterval: 600    # Time between disaster checks in ticks (600 = 30 seconds)
+  debug: false
+
 nations:
   africa:
     displayName: "Africa"
@@ -22,16 +27,8 @@ nations:
         enabled: true
         minInterval: 1200  # 20 minutes in ticks (20 ticks = 1 second)
         maxInterval: 3600  # 60 minutes in ticks
-        duration: 600      # 10 minutes duration
+        duration: 1200     # 20 minutes duration - longer for thirst system
         probability: 0.3   # 30% chance when checked
-        message: "&6[DISASTER] &cA severe drought has begun in Africa! Water sources are drying up..."
-      sandstorms:
-        enabled: true
-        minInterval: 1800  # 30 minutes
-        maxInterval: 4800  # 80 minutes
-        duration: 300      # 5 minutes duration
-        probability: 0.25  # 25% chance
-        message: "&6[DISASTER] &eA massive sandstorm is sweeping across Africa! Visibility is severely reduced..."
 
   america:
     displayName: "America"
@@ -54,23 +51,20 @@ nations:
         enabled: true
         minInterval: 2400  # 40 minutes
         maxInterval: 6000  # 100 minutes
-        duration: 180      # 3 minutes duration
-        probability: 0.2   # 20% chance
-        message: "&6[DISASTER] &4Meteor shower detected over America! Take cover as burning rocks fall from the sky!"
+        duration: 300      # 5 minutes duration - shorter, more intense
+        probability: 0.25  # 25% chance - increased reward value
       wildfires:
         enabled: true
         minInterval: 1800  # 30 minutes
         maxInterval: 4200  # 70 minutes
         duration: 900      # 15 minutes duration
-        probability: 0.35  # 35% chance
-        message: "&6[DISASTER] &cWildfires are spreading rapidly across American forests! Evacuate the area immediately!"
+        probability: 0.3   # 30% chance - reduced from 35%
       tornadoes:
         enabled: true
         minInterval: 3600  # 60 minutes
         maxInterval: 7200  # 120 minutes
-        duration: 120      # 2 minutes duration
-        probability: 0.1   # 10% chance (rare)
-        message: "&6[DISASTER] &8A powerful tornado has formed in America! Seek shelter immediately!"
+        duration: 180      # 3 minutes duration - increased from 2
+        probability: 0.15  # 15% chance - increased from 10%
 
   europe:
     displayName: "Europe"
@@ -93,65 +87,31 @@ nations:
         minInterval: 1500  # 25 minutes
         maxInterval: 3000  # 50 minutes
         duration: 1200     # 20 minutes duration
-        probability: 0.4   # 40% chance
-        message: "&6[DISASTER] &9Heavy rains are causing severe flooding across Europe! Rivers are overflowing!"
+        probability: 0.35  # 35% chance - increased from 40%
       plagues:
         enabled: true
         minInterval: 4800  # 80 minutes
         maxInterval: 9600  # 160 minutes
-        duration: 1800     # 30 minutes duration
-        probability: 0.15  # 15% chance (low)
-        message: "&6[DISASTER] &2A plague is slowly spreading through European settlements... Stay vigilant."
+        duration: 1800     # 30 minutes duration - longer for spread mechanics
+        probability: 0.2   # 20% chance - rare but deadly
       storms:
         enabled: true
-        minInterval: 900   # 15 minutes
-        maxInterval: 2400  # 40 minutes
-        duration: 300      # 5 minutes duration
-        probability: 0.3   # 30% chance
-        message: "&6[DISASTER] &7Violent storms are lashing Europe! Lightning strikes threaten the land!"
-
-  antarctica:
-    displayName: "Antarctica"
-    totalPlayers: 0
-    centerX: 0
-    centerZ: -128
-    missileTypes:
-      - "v2_antarctica"
-      - "tsar_antarctica"
-    borders:
-      minX: -64
-      maxX: 64
-      minZ: -192
-      maxZ: -64
-      minY: -64
-      maxY: 320
-    disasters:
-      blizzards:
-        enabled: true
         minInterval: 1200  # 20 minutes
-        maxInterval: 2400  # 40 minutes
+        maxInterval: 3600  # 60 minutes
         duration: 600      # 10 minutes duration
-        probability: 0.5   # 50% chance
-        message: "&6[DISASTER] &fA fierce blizzard is engulfing Antarctica! Visibility is near zero!"
-      ice_storms:
-        enabled: true
-        minInterval: 2400  # 40 minutes
-        maxInterval: 4800  # 80 minutes
-        duration: 450      # 7.5 minutes duration
-        probability: 0.25  # 25% chance
-        message: "&6[DISASTER] &bDeadly ice storms are battering Antarctica! The cold is becoming unbearable!"
+        probability: 0.4   # 40% chance - common weather event
 
   asia:
     displayName: "Asia"
     totalPlayers: 0
-    centerX: 128
+    centerX: 192
     centerZ: 0
     missileTypes:
       - "df21_asia"
       - "iskander_asia"
     borders:
-      minX: 64
-      maxX: 192
+      minX: 128
+      maxX: 256
       minZ: -64
       maxZ: 64
       minY: -64
@@ -159,28 +119,55 @@ nations:
     disasters:
       earthquakes:
         enabled: true
-        minInterval: 3600  # 60 minutes
-        maxInterval: 7200  # 120 minutes
-        duration: 180      # 3 minutes duration
-        probability: 0.2   # 20% chance
-        message: "&6[DISASTER] &4A massive earthquake is shaking Asia! The ground trembles beneath your feet!"
-      tsunamis:
-        enabled: true
-        minInterval: 4800  # 80 minutes
-        maxInterval: 9600  # 160 minutes
-        duration: 600      # 10 minutes duration
-        probability: 0.15  # 15% chance (rare)
-        message: "&6[DISASTER] &9A devastating tsunami is approaching Asian coastlines! Seek higher ground immediately!"
-      monsoons:
+        minInterval: 2400  # 40 minutes
+        maxInterval: 5400  # 90 minutes
+        duration: 300      # 5 minutes duration
+        probability: 0.3   # 30% chance
+      typhoons:
         enabled: true
         minInterval: 1800  # 30 minutes
-        maxInterval: 3600  # 60 minutes
+        maxInterval: 4200  # 70 minutes
         duration: 900      # 15 minutes duration
-        probability: 0.3   # 30% chance
-        message: "&6[DISASTER] &7Heavy monsoon rains are flooding across Asia! Rivers are overflowing rapidly!"
+        probability: 0.25  # 25% chance
 
-# Global disaster settings
-global:
-  enableDisasters: true
-  checkInterval: 600         # Check for disasters every 30 seconds (600 ticks)
-  debug: false              # Enable debug messages for disaster system
+  antarctica:
+    displayName: "Antarctica"
+    totalPlayers: 0
+    centerX: 0
+    centerZ: -192
+    missileTypes:
+      - "v2_antarctica"
+      - "tsar_antarctica"
+    borders:
+      minX: -64
+      maxX: 64
+      minZ: -256
+      maxZ: -128
+      minY: -64
+      maxY: 320
+    disasters:
+      blizzards:
+        enabled: true
+        minInterval: 1800  # 30 minutes
+        maxInterval: 4200  # 70 minutes
+        duration: 900      # 15 minutes duration
+        probability: 0.35  # 35% chance
+      ice_storms:
+        enabled: true
+        minInterval: 2400  # 40 minutes
+        maxInterval: 5400  # 90 minutes
+        duration: 600      # 10 minutes duration
+        probability: 0.25  # 25% chance
+
+# Disaster Configuration Notes:
+# - Removed sandstorms (as requested)
+# - All disasters now use messages from messages.yml
+# - Drought has thirst system requiring water to survive
+# - Plague spreads between players within 10 blocks
+# - Meteor showers drop valuable ores including diamonds
+# - Wildfires are smaller and more controlled
+# - Tornadoes throw and spin players around
+# - Flooding places water and destroys crops
+# - Storms have lightning and rain effects
+# - All timings are in ticks (20 ticks = 1 second)
+# - Probability is chance of occurring when checked (0.0-1.0)

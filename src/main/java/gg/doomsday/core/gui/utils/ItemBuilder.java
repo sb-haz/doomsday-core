@@ -4,6 +4,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,6 +71,14 @@ public class ItemBuilder {
     
     public ItemBuilder hideAll() {
         meta.addItemFlags(org.bukkit.inventory.ItemFlag.values());
+        return this;
+    }
+    
+    public ItemBuilder setSkullOwner(String ownerName) {
+        if (item.getType() == Material.PLAYER_HEAD && meta instanceof SkullMeta) {
+            SkullMeta skullMeta = (SkullMeta) meta;
+            skullMeta.setOwner(ownerName);
+        }
         return this;
     }
     

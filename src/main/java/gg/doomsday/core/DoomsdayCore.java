@@ -1,0 +1,319 @@
+package gg.doomsday.core;
+
+import gg.doomsday.core.defense.AntiAirDefense;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.BlockDisplay;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import gg.doomsday.core.config.ConfigManager;
+import gg.doomsday.core.services.MissileService;
+import gg.doomsday.core.managers.MessageManager;
+import gg.doomsday.core.managers.BlockManager;
+import gg.doomsday.core.defense.AntiAirDefenseManager;
+import gg.doomsday.core.defense.ReinforcedBlockManager;
+import gg.doomsday.core.explosions.ExplosionHandler;
+import gg.doomsday.core.explosions.RocketLauncher;
+import gg.doomsday.core.items.ReinforcementHandler;
+import gg.doomsday.core.items.ReinforcementDetectorManager;
+import gg.doomsday.core.nations.NationManager;
+import gg.doomsday.core.nations.NationPlayerManager;
+import gg.doomsday.core.gui.NationGUI;
+import gg.doomsday.core.seasons.SeasonManager;
+import gg.doomsday.core.commands.SeasonCommand;
+import gg.doomsday.core.commands.DisasterCommand;
+import gg.doomsday.core.commands.RocketCommand;
+import gg.doomsday.core.commands.AntiairCommand;
+import gg.doomsday.core.commands.NationsCommand;
+import gg.doomsday.core.listeners.PlayerJoinListener;
+import gg.doomsday.core.scoreboard.GameScoreboard;
+import gg.doomsday.core.messaging.MessagingManager;
+import gg.doomsday.core.gui.utils.ItemBuilder;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+
+public final class DoomsdayCore extends JavaPlugin implements TabCompleter {
+
+    private ConfigManager configManager;
+    private ExplosionHandler explosionHandler;
+    private RocketLauncher rocketLauncher;
+    private ReinforcedBlockManager reinforcedBlockManager;
+    private ReinforcementHandler reinforcementHandler;
+    private AntiAirDefenseManager antiAirManager;
+    private ReinforcementDetectorManager detectorManager;
+    private gg.doomsday.core.utils.ColorChatHandler colorChatHandler;
+    private gg.doomsday.core.utils.ReloadCommandHandler reloadCommandHandler;
+    private MessageManager messageManager;
+    private MissileService missileService;
+    private GUIManager guiManager;
+    private BlockManager blockManager;
+    private NationManager nationManager;
+    private NationPlayerManager nationPlayerManager;
+    private NationGUI nationGUI;
+    private SeasonManager seasonManager;
+    private GameScoreboard gameScoreboard;
+    private MessagingManager messagingManager;
+
+    @Override
+    public void onEnable() {
+        try {
+            getLogger().info("Starting DoomsdayCore plugin initialization...");
+            
+            // Initialize configuration manager first
+            getLogger().info("Loading configuration manager...");
+            configManager = new ConfigManager(this);
+            
+            // Initialize message manager
+            getLogger().info("Loading message manager...");
+            messageManager = new MessageManager(this);
+        
+            // Initialize reinforced blocks system
+            getLogger().info("Loading reinforced blocks system...");
+            reinforcedBlockManager = new ReinforcedBlockManager(this);
+            reinforcementHandler = new ReinforcementHandler(this, reinforcedBlockManager);
+            
+            // Initialize detector manager
+            getLogger().info("Loading detector manager...");
+            detectorManager = new ReinforcementDetectorManager(this, reinforcedBlockManager, reinforcementHandler.getCustomItemManager());
+            
+            // Initialize anti-air defense system
+            getLogger().info("Loading anti-air defense system...");
+            antiAirManager = new AntiAirDefenseManager(this);
+        
+            // Initialize explosion handler with reinforced blocks support
+            getLogger().info("Loading explosion handler...");
+            explosionHandler = new ExplosionHandler(this, reinforcedBlockManager);
+            rocketLauncher = new RocketLauncher(this, explosionHandler, reinforcedBlockManager, antiAirManager);
+            
+            // Initialize utility handlers
+            getLogger().info("Loading utility handlers...");
+            colorChatHandler = new gg.doomsday.core.utils.ColorChatHandler(this);
+            reloadCommandHandler = new gg.doomsday.core.utils.ReloadCommandHandler(this);
+            
+            // Initialize missile service (centralized missile operations)
+            getLogger().info("Loading missile service...");
+            missileService = new MissileService(this, rocketLauncher, messageManager);
+            
+            // Initialize nation manager with disaster system
+            getLogger().info("Loading nation manager...");
+            nationManager = new NationManager(this);
+            
+            // Initialize nation player manager
+            getLogger().info("Loading nation player manager...");
+            nationPlayerManager = new NationPlayerManager(this, nationManager);
+            
+            // Connect nation player manager to nation manager for disaster effects
+            nationManager.setNationPlayerManager(nationPlayerManager);
+            
+            // Initialize messaging manager
+            getLogger().info("Loading messaging manager...");
+            messagingManager = new MessagingManager(this, nationPlayerManager);
+        
+        // Initialize nation GUI
+        nationGUI = new NationGUI(this, nationManager, nationPlayerManager);
+        
+        // Initialize season system
+        seasonManager = new SeasonManager(this);
+        
+        // Validate active season - disable plugin if invalid
+        try {
+            seasonManager.validateActiveSeason();
+        } catch (IllegalStateException e) {
+            getLogger().severe("SEASON VALIDATION FAILED: " + e.getMessage());
+            getLogger().severe("Plugin will be disabled. Fix the season configuration and restart.");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+        
+        // Initialize GUI manager
+        guiManager = new GUIManager(this, reinforcementHandler, detectorManager, antiAirManager, missileService, nationManager);
+        
+        // Initialize block manager
+        blockManager = new BlockManager(this, antiAirManager, guiManager);
+        
+        // Place missile and anti-air blocks on startup
+        Bukkit.getScheduler().runTaskLater(this, () -> {
+            // Get default world or first available world
+            org.bukkit.World world = Bukkit.getWorlds().isEmpty() ? null : Bukkit.getWorlds().get(0);
+            if (world != null) {
+                blockManager.placeAllBlocks(world);
+                getLogger().info("Placed missile and anti-air blocks on startup");
+            } else {
+                getLogger().warning("No world available for placing blocks on startup");
+            }
+        }, 20L); // Delay 1 second to ensure world is loaded
+        
+        // Initialize scoreboard system
+        gameScoreboard = new GameScoreboard(this, seasonManager, nationManager, nationPlayerManager);
+        
+        // Register event listeners
+        getServer().getPluginManager().registerEvents(explosionHandler, this);
+        getServer().getPluginManager().registerEvents(reinforcementHandler, this);
+        getServer().getPluginManager().registerEvents(new PlayerJoinListener(seasonManager, gameScoreboard), this);
+        
+        // Register new command structure
+        RocketCommand rocketCommand = new RocketCommand(this, missileService, messageManager, reinforcedBlockManager, reinforcementHandler, detectorManager);
+        getCommand("rocket").setExecutor(rocketCommand);
+        getCommand("rocket").setTabCompleter(rocketCommand);
+        
+        AntiairCommand antiairCommand = new AntiairCommand(this, antiAirManager, messageManager);
+        getCommand("antiair").setExecutor(antiairCommand);
+        getCommand("antiair").setTabCompleter(antiairCommand);
+        
+        NationsCommand nationsCommand = new NationsCommand(this, nationManager, nationPlayerManager, nationGUI);
+        getCommand("nations").setExecutor(nationsCommand);
+        getCommand("nations").setTabCompleter(nationsCommand);
+        
+        SeasonCommand seasonCommand = new SeasonCommand(seasonManager);
+        getCommand("seasons").setExecutor(seasonCommand);
+        getCommand("seasons").setTabCompleter(seasonCommand);
+        
+        DisasterCommand disasterCommand = new DisasterCommand(nationManager, this);
+        getCommand("disaster").setExecutor(disasterCommand);
+        getCommand("disaster").setTabCompleter(disasterCommand);
+        
+        // Utility commands
+        getCommand("cc").setExecutor(colorChatHandler);
+        getCommand("cc").setTabCompleter(colorChatHandler);
+        getCommand("rr").setExecutor(reloadCommandHandler);
+        getCommand("rr").setTabCompleter(reloadCommandHandler);
+        
+        // Start periodic cleanup task for reinforced blocks (every 5 minutes)
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (reinforcedBlockManager != null) {
+                    reinforcedBlockManager.cleanupInvalidReinforcements();
+                }
+            }
+        }.runTaskTimer(this, 20L * 60 * 5, 20L * 60 * 5); // 5 minutes = 6000 ticks
+        
+            getLogger().info("DoomsdayCore plugin enabled successfully!");
+            getLogger().info("Reinforced blocks system initialized with " + reinforcedBlockManager.getReinforcedBlockCount() + " blocks");
+            getLogger().info("Anti-air defense system initialized with " + antiAirManager.getDefenses().size() + " defense installations");
+            getLogger().info("Nation system initialized with " + nationManager.getAllNations().size() + " nations and natural disasters");
+            
+        } catch (Exception e) {
+            getLogger().severe("Failed to initialize DoomsdayCore plugin: " + e.getMessage());
+            e.printStackTrace();
+            getServer().getPluginManager().disablePlugin(this);
+        }
+    }
+
+    public ConfigManager getConfigManager() {
+        return configManager;
+    }
+
+    public MessageManager getMessageManager() {
+        return messageManager;
+    }
+    
+    public RocketLauncher getRocketLauncher() {
+        return rocketLauncher;
+    }
+    
+    public MissileService getMissileService() {
+        return missileService;
+    }
+    
+    public NationManager getNationManager() {
+        return nationManager;
+    }
+    
+    public MessagingManager getMessagingManager() {
+        return messagingManager;
+    }
+    
+    public NationPlayerManager getNationPlayerManager() {
+        return nationPlayerManager;
+    }
+    
+    @Override
+    public void onDisable() {
+        // Save reinforced blocks data
+        if (reinforcedBlockManager != null) {
+            reinforcedBlockManager.saveReinforcedBlocks();
+        }
+        
+        // Shutdown detector manager
+        if (detectorManager != null) {
+            detectorManager.shutdown();
+        }
+        
+        // Shutdown nation player manager
+        if (nationPlayerManager != null) {
+            nationPlayerManager.saveConfiguration();
+        }
+        
+        // Shutdown nation manager
+        if (nationManager != null) {
+            nationManager.shutdown();
+        }
+        
+        // Shutdown scoreboard system
+        if (gameScoreboard != null) {
+            gameScoreboard.shutdown();
+        }
+        
+        // Unregister custom recipe
+        if (reinforcementHandler != null) {
+            reinforcementHandler.unregisterRecipe();
+        }
+        
+        getLogger().info("Rocket plugin disabled!");
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        // Legacy support for old /r commands - redirect to new command structure
+        if (command.getName().equalsIgnoreCase("r")) {
+            return handleLegacyRocketCommand(sender, args);
+        }
+        
+        return false;
+    }
+    
+    private boolean handleLegacyRocketCommand(CommandSender sender, String[] args) {
+        sender.sendMessage(messageManager.getMessage("commands.legacy.redirect_header"));
+        sender.sendMessage(messageManager.getMessage("commands.legacy.redirect_message"));
+        sender.sendMessage("");
+        sender.sendMessage(messageManager.getMessage("commands.legacy.new_structure_header"));
+        sender.sendMessage(messageManager.getMessage("commands.legacy.rocket_desc"));
+        sender.sendMessage(messageManager.getMessage("commands.legacy.antiair_desc"));
+        sender.sendMessage(messageManager.getMessage("commands.legacy.nations_desc"));
+        sender.sendMessage(messageManager.getMessage("commands.legacy.seasons_desc"));
+        sender.sendMessage(messageManager.getMessage("commands.legacy.disaster_desc"));
+        sender.sendMessage("");
+        sender.sendMessage(messageManager.getMessage("commands.legacy.player_hint"));
+        sender.sendMessage(messageManager.getMessage("commands.legacy.staff_hint"));
+        return true;
+    }
+
+
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        // Legacy support for /r command - show help
+        if (command.getName().equalsIgnoreCase("r")) {
+            List<String> completions = new ArrayList<>();
+            completions.add("Use /rocket, /antiair, or /nations instead");
+            return completions;
+        }
+        
+        return new ArrayList<>();
+    }
+
+}

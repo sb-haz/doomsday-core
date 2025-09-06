@@ -1,5 +1,6 @@
 package gg.doomsday.core.nations;
 
+import gg.doomsday.core.managers.MessageManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -10,6 +11,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -22,16 +24,30 @@ import java.util.concurrent.ThreadLocalRandom;
 public class DisasterEffectsHandler {
     private final JavaPlugin plugin;
     private final NationPlayerManager nationPlayerManager;
+    private final MessageManager messageManager;
     private final Map<String, BukkitRunnable> activeEffects;
     private final Map<String, Set<Location>> floodedBlocks;
     private final Map<String, Set<Location>> droughtBlocks;
+    
+    // Plague tracking
+    private final Map<String, Set<UUID>> infectedPlayers;
+    private final Map<String, Map<UUID, Long>> thirstyPlayers;
+    
+    // Configuration values
+    private final int PLAGUE_SPREAD_RADIUS = 10;
+    private final boolean PLAGUE_CAN_KILL = true;
+    private final int DROUGHT_THIRST_DAMAGE = 1;
+    private final long DROUGHT_DAMAGE_INTERVAL = 10000; // 10 seconds in milliseconds
 
     public DisasterEffectsHandler(JavaPlugin plugin, NationPlayerManager nationPlayerManager) {
         this.plugin = plugin;
         this.nationPlayerManager = nationPlayerManager;
+        this.messageManager = new MessageManager(plugin);
         this.activeEffects = new HashMap<>();
         this.floodedBlocks = new HashMap<>();
         this.droughtBlocks = new HashMap<>();
+        this.infectedPlayers = new HashMap<>();
+        this.thirstyPlayers = new HashMap<>();
     }
 
     public void triggerDisaster(Nation nation, Disaster disaster) {
@@ -68,9 +84,6 @@ public class DisasterEffectsHandler {
             case "droughts":
                 startDrought(nation, disaster, effectKey);
                 break;
-            case "sandstorms":
-                startSandstorm(nation, disaster, effectKey);
-                break;
             
             // Antarctica disasters
             case "blizzards":
@@ -102,6 +115,10 @@ public class DisasterEffectsHandler {
                 break;
             case "droughts":
                 cleanupDrought(effectKey);
+                cleanupThirst(effectKey);
+                break;
+            case "plagues":
+                cleanupPlague(effectKey);
                 break;
         }
     }
@@ -143,7 +160,6 @@ public class DisasterEffectsHandler {
         int y = world.getHighestBlockYAt(x, z) + 20;
         
         Location meteorStart = new Location(world, x, y, z);
-        Location meteorEnd = new Location(world, x, world.getHighestBlockYAt(x, z), z);
         
         // Create meteor effect
         TNTPrimed meteor = world.spawn(meteorStart, TNTPrimed.class);
@@ -172,25 +188,45 @@ public class DisasterEffectsHandler {
             }
         }.runTaskTimer(plugin, 0L, 1L);
         
-        // On impact, drop rare ores
+        // On impact, drop valuable ores including diamonds
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             Location impact = meteor.getLocation();
             
-            // Drop rare materials
-            if (ThreadLocalRandom.current().nextDouble() < 0.7) {
-                world.dropItem(impact, new org.bukkit.inventory.ItemStack(Material.IRON_ORE, 2 + ThreadLocalRandom.current().nextInt(4)));
+            // Drop rare materials with better rewards
+            if (ThreadLocalRandom.current().nextDouble() < 0.8) {
+                world.dropItem(impact, new ItemStack(Material.IRON_ORE, 3 + ThreadLocalRandom.current().nextInt(5)));
+            }
+            if (ThreadLocalRandom.current().nextDouble() < 0.6) {
+                world.dropItem(impact, new ItemStack(Material.GOLD_ORE, 2 + ThreadLocalRandom.current().nextInt(4)));
             }
             if (ThreadLocalRandom.current().nextDouble() < 0.4) {
-                world.dropItem(impact, new org.bukkit.inventory.ItemStack(Material.GOLD_ORE, 1 + ThreadLocalRandom.current().nextInt(3)));
+                world.dropItem(impact, new ItemStack(Material.DIAMOND_ORE, 1 + ThreadLocalRandom.current().nextInt(3)));
             }
             if (ThreadLocalRandom.current().nextDouble() < 0.2) {
-                world.dropItem(impact, new org.bukkit.inventory.ItemStack(Material.DIAMOND_ORE, 1));
+                world.dropItem(impact, new ItemStack(Material.EMERALD_ORE, 1 + ThreadLocalRandom.current().nextInt(2)));
+            }
+            // Sometimes drop rare blocks
+            if (ThreadLocalRandom.current().nextDouble() < 0.1) {
+                world.dropItem(impact, new ItemStack(Material.ANCIENT_DEBRIS, 1));
             }
             
         }, 40L);
     }
 
     private void startWildfire(Nation nation, Disaster disaster, String effectKey) {
+        // Create 2-3 smaller fire centers instead of spreading everywhere
+        List<Location> fireCenters = new ArrayList<>();
+        World world = Bukkit.getWorlds().get(0);
+        NationBorders borders = nation.getBorders();
+        
+        // Create 2-3 fire centers
+        for (int i = 0; i < 2 + ThreadLocalRandom.current().nextInt(2); i++) {
+            int x = ThreadLocalRandom.current().nextInt(borders.getMinX(), borders.getMaxX());
+            int z = ThreadLocalRandom.current().nextInt(borders.getMinZ(), borders.getMaxZ());
+            int y = world.getHighestBlockYAt(x, z);
+            fireCenters.add(new Location(world, x, y, z));
+        }
+        
         BukkitRunnable fireTask = new BukkitRunnable() {
             int ticks = 0;
             final int maxTicks = disaster.getDuration();
@@ -203,9 +239,11 @@ public class DisasterEffectsHandler {
                     return;
                 }
                 
-                // Spread fire every 5 seconds
-                if (ticks % 100 == 0) {
-                    spreadFire(nation);
+                // Spread fire more slowly and in smaller areas
+                if (ticks % 200 == 0) { // Every 10 seconds instead of 5
+                    for (Location center : fireCenters) {
+                        spreadFireAroundCenter(center, 15); // 15 block radius
+                    }
                 }
                 
                 ticks++;
@@ -216,19 +254,19 @@ public class DisasterEffectsHandler {
         activeEffects.put(effectKey, fireTask);
     }
     
-    private void spreadFire(Nation nation) {
-        World world = Bukkit.getWorlds().get(0);
-        NationBorders borders = nation.getBorders();
+    private void spreadFireAroundCenter(Location center, int radius) {
+        World world = center.getWorld();
         
-        for (int attempts = 0; attempts < 15; attempts++) {
-            int x = ThreadLocalRandom.current().nextInt(borders.getMinX(), borders.getMaxX());
-            int z = ThreadLocalRandom.current().nextInt(borders.getMinZ(), borders.getMaxZ());
+        // Only spread 3-5 fires per center per tick
+        for (int attempts = 0; attempts < 5; attempts++) {
+            int x = center.getBlockX() + ThreadLocalRandom.current().nextInt(-radius, radius + 1);
+            int z = center.getBlockZ() + ThreadLocalRandom.current().nextInt(-radius, radius + 1);
             int y = world.getHighestBlockYAt(x, z);
             
             Block block = world.getBlockAt(x, y, z);
             Block above = block.getRelative(BlockFace.UP);
             
-            // Check if it's a flammable block (wood, leaves, grass)
+            // Check if it's a flammable block
             if ((block.getType().name().contains("LOG") || 
                  block.getType().name().contains("LEAVES") || 
                  block.getType() == Material.GRASS_BLOCK ||
@@ -237,7 +275,7 @@ public class DisasterEffectsHandler {
                 
                 above.setType(Material.FIRE);
                 world.spawnParticle(Particle.FLAME, above.getLocation().add(0.5, 0.5, 0.5), 10, 0.5, 0.5, 0.5, 0.1);
-                world.playSound(above.getLocation(), Sound.BLOCK_FIRE_AMBIENT, 0.5f, 1.0f);
+                world.playSound(above.getLocation(), Sound.BLOCK_FIRE_AMBIENT, 0.3f, 1.0f);
             }
         }
     }
@@ -255,8 +293,8 @@ public class DisasterEffectsHandler {
             final int maxTicks = disaster.getDuration();
             double currentX = startX;
             double currentZ = startZ;
-            final double moveX = ThreadLocalRandom.current().nextDouble(-0.5, 0.5);
-            final double moveZ = ThreadLocalRandom.current().nextDouble(-0.5, 0.5);
+            final double moveX = ThreadLocalRandom.current().nextDouble(-0.3, 0.3);
+            final double moveZ = ThreadLocalRandom.current().nextDouble(-0.3, 0.3);
             
             @Override
             public void run() {
@@ -272,38 +310,56 @@ public class DisasterEffectsHandler {
                 
                 Location tornadoLoc = new Location(world, currentX, world.getHighestBlockYAt((int)currentX, (int)currentZ), currentZ);
                 
-                // Tornado visual effects
-                for (int y = 0; y < 20; y++) {
-                    double radius = (20 - y) * 0.3;
-                    for (int angle = 0; angle < 360; angle += 30) {
-                        double radAngle = Math.toRadians(angle + ticks * 10);
+                // Enhanced tornado visual effects
+                for (int y = 0; y < 25; y++) {
+                    double radius = Math.max(0.5, (25 - y) * 0.4);
+                    for (int angle = 0; angle < 360; angle += 20) {
+                        double radAngle = Math.toRadians(angle + ticks * 15); // Faster spinning
                         double x = tornadoLoc.getX() + radius * Math.cos(radAngle);
                         double z = tornadoLoc.getZ() + radius * Math.sin(radAngle);
                         
                         Location particleLoc = new Location(world, x, tornadoLoc.getY() + y, z);
-                        world.spawnParticle(Particle.CLOUD, particleLoc, 1, 0.1, 0.1, 0.1, 0.1);
+                        world.spawnParticle(Particle.CLOUD, particleLoc, 2, 0.1, 0.1, 0.1, 0.2);
+                        world.spawnParticle(Particle.CRIT, particleLoc, 1, 0.2, 0.2, 0.2, 0.1);
                     }
                 }
                 
-                // Only affect players who are members of this nation and are near the tornado
+                // Enhanced player effects - throw and spin players
                 for (Player player : getOnlinePlayersInNation(nation.getId())) {
-                    if (player.getLocation().distance(tornadoLoc) <= 8) {
-                        Vector pull = tornadoLoc.toVector().subtract(player.getLocation().toVector()).normalize();
-                        pull.setY(0.5); // Lift up
-                        player.setVelocity(pull.multiply(0.3));
+                    double distance = player.getLocation().distance(tornadoLoc);
+                    if (distance <= 12) { // Larger effect radius
+                        // Create spinning motion
+                        double angle = Math.toRadians(ticks * 20); // Fast spinning
+                        Vector pull = new Vector(
+                            Math.cos(angle) * 0.5,
+                            0.8 + ThreadLocalRandom.current().nextDouble() * 0.6, // Random upward force
+                            Math.sin(angle) * 0.5
+                        );
                         
-                        // Nausea effect (use appropriate name based on version)
+                        // Add inward pull toward tornado center
+                        Vector toCenter = tornadoLoc.toVector().subtract(player.getLocation().toVector()).normalize();
+                        pull.add(toCenter.multiply(0.3));
+                        
+                        player.setVelocity(pull);
+                        
+                        // Confusion and nausea effects
                         PotionEffectType nauseaEffect = PotionEffectType.getByName("NAUSEA");
                         if (nauseaEffect == null) nauseaEffect = PotionEffectType.getByName("CONFUSION");
                         if (nauseaEffect != null) {
-                            player.addPotionEffect(new PotionEffect(nauseaEffect, 60, 1));
+                            player.addPotionEffect(new PotionEffect(nauseaEffect, 100, 2));
                         }
+                        
+                        // Slowness to simulate being caught in tornado
+                        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 60, 1));
+                        
+                        // Particle effects around player
+                        world.spawnParticle(Particle.CRIT, player.getLocation().add(0, 1, 0), 10, 1, 1, 1, 0.3);
                     }
                 }
                 
                 // Sound effects
-                if (ticks % 20 == 0) {
-                    world.playSound(tornadoLoc, Sound.ENTITY_WITHER_SHOOT, 1.0f, 0.5f);
+                if (ticks % 15 == 0) {
+                    world.playSound(tornadoLoc, Sound.ENTITY_WITHER_SHOOT, 1.5f, 0.3f);
                 }
                 
                 ticks++;
@@ -317,7 +373,6 @@ public class DisasterEffectsHandler {
     // EUROPE DISASTERS
     private void startFlooding(Nation nation, Disaster disaster, String effectKey) {
         World world = Bukkit.getWorlds().get(0);
-        NationBorders borders = nation.getBorders();
         Set<Location> floodBlocks = new HashSet<>();
         
         BukkitRunnable floodTask = new BukkitRunnable() {
@@ -332,9 +387,14 @@ public class DisasterEffectsHandler {
                     return;
                 }
                 
-                // Expand flood every 10 seconds
-                if (ticks % 200 == 0) {
+                // Expand flood every 8 seconds
+                if (ticks % 160 == 0) {
                     expandFlood(nation, floodBlocks);
+                }
+                
+                // Apply water damage to players in flooded areas
+                if (ticks % 100 == 0) {
+                    applyFloodEffects(nation, floodBlocks);
                 }
                 
                 ticks++;
@@ -350,13 +410,13 @@ public class DisasterEffectsHandler {
         World world = Bukkit.getWorlds().get(0);
         NationBorders borders = nation.getBorders();
         
-        for (int attempts = 0; attempts < 25; attempts++) {
+        for (int attempts = 0; attempts < 30; attempts++) {
             int x = ThreadLocalRandom.current().nextInt(borders.getMinX(), borders.getMaxX());
             int z = ThreadLocalRandom.current().nextInt(borders.getMinZ(), borders.getMaxZ());
             int y = world.getHighestBlockYAt(x, z);
             
-            // Find low areas (rivers, valleys)
-            if (y < 65) {
+            // Target low areas and near existing water
+            if (y < 67 || isNearWater(world, x, y, z)) {
                 Location floodLoc = new Location(world, x, y + 1, z);
                 Block block = floodLoc.getBlock();
                 
@@ -364,20 +424,67 @@ public class DisasterEffectsHandler {
                     block.setType(Material.WATER);
                     floodBlocks.add(floodLoc);
                     
-                    world.spawnParticle(Particle.WATER_SPLASH, floodLoc.add(0.5, 0.5, 0.5), 5, 0.5, 0.5, 0.5, 0.1);
+                    world.spawnParticle(Particle.WATER_SPLASH, floodLoc.add(0.5, 0.5, 0.5), 8, 0.5, 0.5, 0.5, 0.1);
                     
                     // Destroy crops
                     Block below = block.getRelative(BlockFace.DOWN);
-                    if (below.getType().name().contains("CROP") || below.getType().name().contains("WHEAT") || 
-                        below.getType().name().contains("CARROT") || below.getType().name().contains("POTATO")) {
+                    if (isCrop(below.getType())) {
                         below.setType(Material.FARMLAND);
                     }
                 }
             }
         }
     }
+    
+    private void applyFloodEffects(Nation nation, Set<Location> floodBlocks) {
+        for (Player player : getOnlinePlayersInNation(nation.getId())) {
+            Location playerLoc = player.getLocation();
+            
+            // Check if player is in flooded area
+            for (Location floodLoc : floodBlocks) {
+                if (playerLoc.distance(floodLoc) < 2.0) {
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 100, 1));
+                    if (ThreadLocalRandom.current().nextDouble() < 0.1) {
+                        player.damage(1.0); // Drowning damage
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    
+    private boolean isNearWater(World world, int x, int y, int z) {
+        for (int dx = -2; dx <= 2; dx++) {
+            for (int dz = -2; dz <= 2; dz++) {
+                if (world.getBlockAt(x + dx, y, z + dz).getType() == Material.WATER) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    private boolean isCrop(Material material) {
+        String name = material.name();
+        return name.contains("CROP") || name.contains("WHEAT") || 
+               name.contains("CARROT") || name.contains("POTATO") ||
+               name.contains("BEETROOT");
+    }
 
     private void startPlague(Nation nation, Disaster disaster, String effectKey) {
+        Set<UUID> infected = new HashSet<>();
+        infectedPlayers.put(effectKey, infected);
+        
+        // Start with 1-2 patient zeros
+        List<Player> nationPlayers = getOnlinePlayersInNation(nation.getId());
+        if (!nationPlayers.isEmpty()) {
+            for (int i = 0; i < Math.min(2, nationPlayers.size()); i++) {
+                Player patient = nationPlayers.get(ThreadLocalRandom.current().nextInt(nationPlayers.size()));
+                infected.add(patient.getUniqueId());
+                patient.sendMessage(messageManager.getMessage("disasters.plagues.infected"));
+            }
+        }
+        
         BukkitRunnable plagueTask = new BukkitRunnable() {
             int ticks = 0;
             final int maxTicks = disaster.getDuration();
@@ -390,9 +497,14 @@ public class DisasterEffectsHandler {
                     return;
                 }
                 
-                // Affect players every 30 seconds
+                // Spread plague every 10 seconds
+                if (ticks % 200 == 0) {
+                    spreadPlague(nation, infected);
+                }
+                
+                // Apply plague effects every 30 seconds
                 if (ticks % 600 == 0) {
-                    spreadPlague(nation);
+                    applyPlagueEffects(infected);
                 }
                 
                 ticks++;
@@ -403,22 +515,53 @@ public class DisasterEffectsHandler {
         activeEffects.put(effectKey, plagueTask);
     }
     
-    private void spreadPlague(Nation nation) {
-        // Only affect players who are members of this nation
-        for (Player player : getOnlinePlayersInNation(nation.getId())) {
-            // Slow hunger drain
-            player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, 1200, 0)); // 1 minute
-            player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 600, 0)); // 30 seconds
+    private void spreadPlague(Nation nation, Set<UUID> infected) {
+        List<Player> allPlayers = getOnlinePlayersInNation(nation.getId());
+        List<UUID> newInfections = new ArrayList<>();
+        
+        for (UUID infectedId : infected) {
+            Player infectedPlayer = Bukkit.getPlayer(infectedId);
+            if (infectedPlayer == null || !infectedPlayer.isOnline()) continue;
             
-            if (ThreadLocalRandom.current().nextDouble() < 0.3) {
-                player.sendMessage("§2§l[PLAGUE] §7You feel a creeping sickness...");
+            // Check for nearby players to infect
+            for (Player nearbyPlayer : allPlayers) {
+                if (infected.contains(nearbyPlayer.getUniqueId())) continue;
+                
+                if (infectedPlayer.getLocation().distance(nearbyPlayer.getLocation()) <= PLAGUE_SPREAD_RADIUS) {
+                    if (ThreadLocalRandom.current().nextDouble() < 0.3) { // 30% infection chance
+                        newInfections.add(nearbyPlayer.getUniqueId());
+                        nearbyPlayer.sendMessage(messageManager.getMessage("disasters.plagues.spreading"));
+                    }
+                }
             }
+        }
+        
+        infected.addAll(newInfections);
+    }
+    
+    private void applyPlagueEffects(Set<UUID> infected) {
+        for (UUID playerId : infected) {
+            Player player = Bukkit.getPlayer(playerId);
+            if (player == null || !player.isOnline()) continue;
+            
+            // Apply plague effects
+            player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, 1200, 1));
+            player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 600, 1));
+            player.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 200, 0));
+            
+            // Chance to deal damage or kill if configured
+            if (PLAGUE_CAN_KILL && ThreadLocalRandom.current().nextDouble() < 0.05) { // 5% chance
+                player.damage(2.0);
+            }
+            
+            // Visual effects
+            player.getWorld().spawnParticle(Particle.VILLAGER_ANGRY, 
+                player.getLocation().add(0, 2, 0), 3, 0.5, 0.5, 0.5, 0.0);
         }
     }
 
     private void startStorms(Nation nation, Disaster disaster, String effectKey) {
         World world = Bukkit.getWorlds().get(0);
-        NationBorders borders = nation.getBorders();
         
         BukkitRunnable stormTask = new BukkitRunnable() {
             int ticks = 0;
@@ -432,9 +575,14 @@ public class DisasterEffectsHandler {
                     return;
                 }
                 
-                // Lightning strikes every 5-10 seconds
-                if (ticks % (100 + ThreadLocalRandom.current().nextInt(100)) == 0) {
+                // Lightning strikes every 3-8 seconds
+                if (ticks % (60 + ThreadLocalRandom.current().nextInt(100)) == 0) {
                     strikeLightning(nation);
+                }
+                
+                // Rain effects every 5 seconds
+                if (ticks % 100 == 0) {
+                    createRainEffects(nation);
                 }
                 
                 ticks++;
@@ -457,16 +605,42 @@ public class DisasterEffectsHandler {
         world.strikeLightning(strikeLoc);
         
         // Chance to start fires
-        if (ThreadLocalRandom.current().nextDouble() < 0.4) {
+        if (ThreadLocalRandom.current().nextDouble() < 0.3) {
             Block above = strikeLoc.getBlock().getRelative(BlockFace.UP);
             if (above.getType() == Material.AIR) {
                 above.setType(Material.FIRE);
             }
         }
+        
+        // Damage nearby players
+        for (Player player : getOnlinePlayersInNation(nation.getId())) {
+            if (player.getLocation().distance(strikeLoc) <= 5.0) {
+                player.damage(3.0);
+                player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 100, 0));
+            }
+        }
+    }
+    
+    private void createRainEffects(Nation nation) {
+        World world = Bukkit.getWorlds().get(0);
+        NationBorders borders = nation.getBorders();
+        
+        // Create rain particle effects
+        for (int i = 0; i < 20; i++) {
+            int x = ThreadLocalRandom.current().nextInt(borders.getMinX(), borders.getMaxX());
+            int z = ThreadLocalRandom.current().nextInt(borders.getMinZ(), borders.getMaxZ());
+            int y = world.getHighestBlockYAt(x, z) + 10;
+            
+            Location rainLoc = new Location(world, x, y, z);
+            world.spawnParticle(Particle.WATER_DROP, rainLoc, 3, 2, 0, 2, 0.5);
+        }
     }
 
     // AFRICA DISASTERS
     private void startDrought(Nation nation, Disaster disaster, String effectKey) {
+        Map<UUID, Long> thirstMap = new HashMap<>();
+        thirstyPlayers.put(effectKey, thirstMap);
+        
         World world = Bukkit.getWorlds().get(0);
         NationBorders borders = nation.getBorders();
         Set<Location> driedBlocks = new HashSet<>();
@@ -483,14 +657,14 @@ public class DisasterEffectsHandler {
                     return;
                 }
                 
-                // Dry up water every 15 seconds
-                if (ticks % 300 == 0) {
+                // Dry up water every 20 seconds
+                if (ticks % 400 == 0) {
                     dryUpWater(nation, driedBlocks);
                 }
                 
-                // Affect players every 20 seconds
-                if (ticks % 400 == 0) {
-                    affectPlayersWithDrought(nation);
+                // Apply thirst effects every 5 seconds
+                if (ticks % 100 == 0) {
+                    applyThirstEffects(nation, thirstMap);
                 }
                 
                 ticks++;
@@ -506,7 +680,7 @@ public class DisasterEffectsHandler {
         World world = Bukkit.getWorlds().get(0);
         NationBorders borders = nation.getBorders();
         
-        for (int attempts = 0; attempts < 20; attempts++) {
+        for (int attempts = 0; attempts < 25; attempts++) {
             int x = ThreadLocalRandom.current().nextInt(borders.getMinX(), borders.getMaxX());
             int z = ThreadLocalRandom.current().nextInt(borders.getMinZ(), borders.getMaxZ());
             
@@ -516,88 +690,64 @@ public class DisasterEffectsHandler {
                     block.setType(Material.AIR);
                     driedBlocks.add(block.getLocation());
                     
-                    world.spawnParticle(Particle.CLOUD, block.getLocation().add(0.5, 0.5, 0.5), 3, 0.5, 0.5, 0.5, 0.0);
+                    world.spawnParticle(Particle.SMOKE_NORMAL, block.getLocation().add(0.5, 0.5, 0.5), 5, 0.5, 0.5, 0.5, 0.0);
                     break;
                 }
             }
         }
         
         // Destroy crops
-        for (int attempts = 0; attempts < 10; attempts++) {
+        for (int attempts = 0; attempts < 15; attempts++) {
             int x = ThreadLocalRandom.current().nextInt(borders.getMinX(), borders.getMaxX());
             int z = ThreadLocalRandom.current().nextInt(borders.getMinZ(), borders.getMaxZ());
             int y = world.getHighestBlockYAt(x, z);
             
             Block block = world.getBlockAt(x, y, z);
-            if (block.getType().name().contains("CROP") || block.getType().name().contains("WHEAT") || 
-                block.getType().name().contains("CARROT") || block.getType().name().contains("POTATO")) {
+            if (isCrop(block.getType())) {
                 block.setType(Material.DEAD_BUSH);
             }
         }
     }
     
-    private void affectPlayersWithDrought(Nation nation) {
-        // Only affect players who are members of this nation
+    private void applyThirstEffects(Nation nation, Map<UUID, Long> thirstMap) {
+        long currentTime = System.currentTimeMillis();
+        
         for (Player player : getOnlinePlayersInNation(nation.getId())) {
-            player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, 600, 1)); // 30 seconds, level 2
+            UUID playerId = player.getUniqueId();
             
-            if (ThreadLocalRandom.current().nextDouble() < 0.2) {
-                player.sendMessage("§6§l[DROUGHT] §7The scorching heat drains your energy...");
+            // Check if player drank water recently (has water bucket or water bottle in inventory)
+            boolean hasWater = player.getInventory().contains(Material.WATER_BUCKET) || 
+                             player.getInventory().contains(Material.POTION); // Water bottles are potions
+            
+            if (hasWater) {
+                thirstMap.remove(playerId); // Reset thirst if they have water
+                continue;
+            }
+            
+            Long lastThirstTime = thirstMap.get(playerId);
+            if (lastThirstTime == null) {
+                thirstMap.put(playerId, currentTime);
+                player.sendMessage(messageManager.getMessage("disasters.droughts.thirst"));
+            } else {
+                long timeSinceThirsty = currentTime - lastThirstTime;
+                
+                if (timeSinceThirsty > DROUGHT_DAMAGE_INTERVAL) {
+                    // Start taking damage from thirst
+                    player.damage(DROUGHT_THIRST_DAMAGE);
+                    player.sendMessage(messageManager.getMessage("disasters.droughts.dying"));
+                    
+                    // Apply hunger and weakness
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, 200, 2));
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 200, 1));
+                    
+                    // Update last damage time
+                    thirstMap.put(playerId, currentTime);
+                }
             }
         }
     }
 
-    private void startSandstorm(Nation nation, Disaster disaster, String effectKey) {
-        BukkitRunnable sandstormTask = new BukkitRunnable() {
-            int ticks = 0;
-            final int maxTicks = disaster.getDuration();
-            
-            @Override
-            public void run() {
-                if (ticks >= maxTicks) {
-                    cancel();
-                    activeEffects.remove(effectKey);
-                    return;
-                }
-                
-                // Apply effects every 5 seconds
-                if (ticks % 100 == 0) {
-                    applySandstormEffects(nation);
-                }
-                
-                ticks++;
-            }
-        };
-        
-        sandstormTask.runTaskTimer(plugin, 0L, 1L);
-        activeEffects.put(effectKey, sandstormTask);
-    }
-    
-    private void applySandstormEffects(Nation nation) {
-        World world = Bukkit.getWorlds().get(0);
-        NationBorders borders = nation.getBorders();
-        
-        // Only affect players who are members of this nation
-        for (Player player : getOnlinePlayersInNation(nation.getId())) {
-            player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 200, 0)); // 10 seconds
-            player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 200, 1)); // 10 seconds, level 2
-            
-            // Sand particles around player
-            world.spawnParticle(Particle.BLOCK_DUST, player.getLocation().add(0, 1, 0), 20, 2, 2, 2, 0.1, Material.SAND.createBlockData());
-        }
-        
-        // Environmental sand particles
-        for (int i = 0; i < 15; i++) {
-            int x = ThreadLocalRandom.current().nextInt(borders.getMinX(), borders.getMaxX());
-            int z = ThreadLocalRandom.current().nextInt(borders.getMinZ(), borders.getMaxZ());
-            int y = world.getHighestBlockYAt(x, z) + 5 + ThreadLocalRandom.current().nextInt(10);
-            
-            Location particleLoc = new Location(world, x, y, z);
-            world.spawnParticle(Particle.BLOCK_DUST, particleLoc, 5, 3, 3, 3, 0.1, Material.SAND.createBlockData());
-        }
-    }
-
-    // ANTARCTICA DISASTERS
+    // ANTARCTICA DISASTERS (keeping existing implementations)
     private void startBlizzard(Nation nation, Disaster disaster, String effectKey) {
         BukkitRunnable blizzardTask = new BukkitRunnable() {
             int ticks = 0;
@@ -611,7 +761,6 @@ public class DisasterEffectsHandler {
                     return;
                 }
                 
-                // Apply effects every 3 seconds
                 if (ticks % 60 == 0) {
                     applyBlizzardEffects(nation);
                 }
@@ -628,18 +777,16 @@ public class DisasterEffectsHandler {
         World world = Bukkit.getWorlds().get(0);
         NationBorders borders = nation.getBorders();
         
-        // Only affect players who are members of this nation
         for (Player player : getOnlinePlayersInNation(nation.getId())) {
-            player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 120, 0)); // 6 seconds
-            player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 200, 2)); // 10 seconds, level 3
-            // Mining fatigue effect (use appropriate name based on version)
+            player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 120, 0));
+            player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 200, 2));
+            
             PotionEffectType miningFatigueEffect = PotionEffectType.getByName("MINING_FATIGUE");
             if (miningFatigueEffect == null) miningFatigueEffect = PotionEffectType.getByName("SLOW_DIGGING");
             if (miningFatigueEffect != null) {
-                player.addPotionEffect(new PotionEffect(miningFatigueEffect, 200, 1)); // 10 seconds
+                player.addPotionEffect(new PotionEffect(miningFatigueEffect, 200, 1));
             }
             
-            // Snow particles around player
             world.spawnParticle(Particle.SNOWBALL, player.getLocation().add(0, 2, 0), 30, 3, 3, 3, 0.2);
         }
         
@@ -653,7 +800,6 @@ public class DisasterEffectsHandler {
             world.spawnParticle(Particle.SNOWBALL, particleLoc, 8, 4, 4, 4, 0.1);
         }
         
-        // Occasionally place snow
         if (ThreadLocalRandom.current().nextDouble() < 0.3) {
             int x = ThreadLocalRandom.current().nextInt(borders.getMinX(), borders.getMaxX());
             int z = ThreadLocalRandom.current().nextInt(borders.getMinZ(), borders.getMaxZ());
@@ -668,7 +814,6 @@ public class DisasterEffectsHandler {
 
     private void startIceStorm(Nation nation, Disaster disaster, String effectKey) {
         World world = Bukkit.getWorlds().get(0);
-        NationBorders borders = nation.getBorders();
         
         BukkitRunnable iceStormTask = new BukkitRunnable() {
             int ticks = 0;
@@ -682,7 +827,6 @@ public class DisasterEffectsHandler {
                     return;
                 }
                 
-                // Apply effects every 4 seconds
                 if (ticks % 80 == 0) {
                     applyIceStormEffects(nation);
                 }
@@ -699,18 +843,16 @@ public class DisasterEffectsHandler {
         World world = Bukkit.getWorlds().get(0);
         NationBorders borders = nation.getBorders();
         
-        // Only affect players who are members of this nation
         for (Player player : getOnlinePlayersInNation(nation.getId())) {
-            player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 300, 3)); // 15 seconds, level 4
-            player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 300, 1)); // 15 seconds
-            player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, 200, 0)); // 10 seconds
+            player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 300, 3));
+            player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 300, 1));
+            player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, 200, 0));
             
-            // Ice particles and damage
             world.spawnParticle(Particle.BLOCK_CRACK, player.getLocation().add(0, 1, 0), 15, 2, 2, 2, 0.1, Material.ICE.createBlockData());
             
             if (ThreadLocalRandom.current().nextDouble() < 0.1) {
-                player.damage(1.0); // Small damage from ice
-                player.sendMessage("§b§l[ICE STORM] §7Sharp ice crystals cut through the air!");
+                player.damage(1.0);
+                player.sendMessage(messageManager.getMessage("disasters.ice_storms.damage"));
             }
         }
         
@@ -756,9 +898,17 @@ public class DisasterEffectsHandler {
             droughtBlocks.remove(effectKey);
         }
     }
+    
+    private void cleanupPlague(String effectKey) {
+        infectedPlayers.remove(effectKey);
+    }
+    
+    private void cleanupThirst(String effectKey) {
+        thirstyPlayers.remove(effectKey);
+    }
 
     /**
-     * Helper method to get all online players in a nation using the centralized tracking system
+     * Helper method to get all online players in a nation
      */
     private List<Player> getOnlinePlayersInNation(String nationId) {
         List<Player> players = new ArrayList<>();
@@ -780,7 +930,7 @@ public class DisasterEffectsHandler {
         }
         activeEffects.clear();
         
-        // Cleanup floods and droughts
+        // Cleanup all disaster effects
         for (String effectKey : new HashSet<>(floodedBlocks.keySet())) {
             cleanupFlooding(effectKey);
         }
@@ -788,5 +938,8 @@ public class DisasterEffectsHandler {
         for (String effectKey : new HashSet<>(droughtBlocks.keySet())) {
             cleanupDrought(effectKey);
         }
+        
+        infectedPlayers.clear();
+        thirstyPlayers.clear();
     }
 }

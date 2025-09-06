@@ -5,10 +5,28 @@ api-version: 1.20
 
 commands:
   rocket:
-    description: Launch rockets from config presets or manual coordinates
-    usage: /rocket <rocketName> | /rocket reload | /rocket create <x1> <y1> <z1> <x2> <y2> <z2> [smokeOffset] [speed] [arcScale] [sound] [explosionType]
+    description: Launch missiles and manage rocket systems (Staff Only)
+    usage: /rocket <missile_type> | /rocket reload | /rocket options | /rocket powder [amount] | /rocket helmet [amount] | /rocket items
     permission: rocket.use
-    aliases: [r]
+  antiair:
+    description: Manage anti-aircraft defense systems (Staff Only)
+    usage: /antiair status | /antiair list | /antiair online <name> | /antiair offline <name> | /antiair reload
+    permission: rocket.antiair
+    aliases: [aa]
+  nations:
+    description: Comprehensive nations system with GUI (Players)
+    usage: /nations | /nations leave | /nations info [nation] | /nations teleport [nation] | /nations missiles [nation] | /nations disasters [nation] | /nations items
+    permission: rocket.use
+    aliases: [nation, n]
+  seasons:
+    description: Manage game seasons (Staff Only)
+    usage: /seasons current | /seasons create <id> | /seasons activate | /seasons archive
+    permission: season.admin
+    aliases: [season, s]
+  disaster:
+    description: Manage natural disasters (Staff Only)
+    usage: /disaster trigger <nation> <disaster_type> | /disaster stop <nation> <disaster_type> | /disaster status [nation] | /disaster list | /disaster auto <enable|disable|status> | /disaster reload
+    permission: rocket.disaster
   cc:
     description: Send colored chat messages using & color codes
     usage: /cc <message>
@@ -17,16 +35,10 @@ commands:
     description: Quick server reload command
     usage: /rr
     permission: rocket.reload
-  nation:
-    description: Smart nation GUI - selection if not in nation, list if in nation
-    usage: /nation | /nation leave
+  r:
+    description: Legacy command - redirects to new command structure
+    usage: Use /rocket, /antiair, or /nations instead
     permission: rocket.use
-    aliases: [nations, n]
-  season:
-    description: Manage game seasons
-    usage: /season | /season current | /season create <id> | /season activate | /season archive
-    permission: rocket.use
-    aliases: [seasons, s]
 
 permissions:
   rocket.use:
@@ -46,4 +58,7 @@ permissions:
     default: true
   season.admin:
     description: Allows managing seasons (create, activate, archive)
+    default: op
+  rocket.disaster:
+    description: Allows managing natural disasters (trigger, stop, reload)
     default: op

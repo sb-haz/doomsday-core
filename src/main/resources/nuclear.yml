@@ -1,0 +1,45 @@
+# ========================================
+# NUCLEAR EXPLOSION CONFIGURATION
+# ========================================
+
+nuclear:
+  # How long the mushroom cloud stays visible (in seconds)
+  cloudDuration: 15
+  # How long the black particles persist (in seconds) 
+  particleDuration: 6
+  # Mushroom cloud size settings
+  cloud:
+    # Base radius of the cloud (blocks)
+    baseRadius: 20
+    # Height of the stem (blocks)
+    stemHeight: 45
+    # Height of the cap (blocks) 
+    capHeight: 35
+    # How dense the cloud appears (0.0-1.0, higher = more dense)
+    density: 0.3
+  # Smoke ring settings
+  rings:
+    # Inner ring radius (blocks)
+    innerRadius: 25
+    # Outer ring radius (blocks)
+    outerRadius: 45
+    # Ring density (0.0-1.0, higher = more dense)
+    density: 0.5
+  # Nuclear crater settings
+  crater:
+    # How deep the crater goes (in blocks)
+    depth: 15
+    # Radius of the crater (in blocks)
+    radius: 25
+  # Nuclear flash and shockwave settings
+  effects:
+    # How far the white flash reaches (in blocks)
+    flashRadius: 100
+    # How far the shockwave travels (in blocks)
+    shockwaveRadius: 80
+    # How far fire spreads from ground zero (in blocks)
+    fireSpreadRadius: 35
+    # How far smoke rings travel (in blocks)
+    smokeRingRadius: 100
+    # How far head shake effect reaches (in blocks)
+    headShakeRadius: 60
