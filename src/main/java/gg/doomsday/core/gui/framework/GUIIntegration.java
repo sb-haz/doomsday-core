@@ -4,6 +4,7 @@ import gg.doomsday.core.gui.nations.NationsGUIFactory;
 import gg.doomsday.core.gui.nations.NationsOverviewGUI;
 import gg.doomsday.core.nations.NationManager;
 import gg.doomsday.core.nations.NationPlayerManager;
+import gg.doomsday.core.defense.AntiAirDefenseManager;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -15,18 +16,20 @@ public class GUIIntegration {
     private final GUIManager guiManager;
     private final NationManager nationManager;
     private final NationPlayerManager playerManager;
+    private final AntiAirDefenseManager antiAirManager;
     
-    public GUIIntegration(JavaPlugin plugin, NationManager nationManager, NationPlayerManager playerManager) {
+    public GUIIntegration(JavaPlugin plugin, NationManager nationManager, NationPlayerManager playerManager, AntiAirDefenseManager antiAirManager) {
         this.guiManager = new GUIManager(plugin);
         this.nationManager = nationManager;
         this.playerManager = playerManager;
+        this.antiAirManager = antiAirManager;
         
         registerGUIFactories();
     }
     
     private void registerGUIFactories() {
         // Register nations GUI factory
-        guiManager.registerGUI("nations", new NationsGUIFactory(guiManager, nationManager, playerManager));
+        guiManager.registerGUI("nations", new NationsGUIFactory(guiManager, nationManager, playerManager, antiAirManager));
     }
     
     public GUIManager getGUIManager() {
@@ -38,7 +41,7 @@ public class GUIIntegration {
      * @param player The player
      */
     public void openNationsOverview(Player player) {
-        guiManager.openGUI(player, new NationsOverviewGUI(guiManager, nationManager, playerManager));
+        guiManager.openGUI(player, new NationsOverviewGUI(guiManager, nationManager, playerManager, antiAirManager));
     }
     
     /**
@@ -46,7 +49,7 @@ public class GUIIntegration {
      * @param player The player
      */
     public void openNationsOverviewFromGUI(Player player) {
-        guiManager.openGUI(player, new NationsOverviewGUI(guiManager, nationManager, playerManager), true);
+        guiManager.openGUI(player, new NationsOverviewGUI(guiManager, nationManager, playerManager, antiAirManager), true);
     }
     
     /**

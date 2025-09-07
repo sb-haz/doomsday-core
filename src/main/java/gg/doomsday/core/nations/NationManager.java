@@ -379,4 +379,11 @@ public class NationManager {
     public boolean areAutomaticDisastersEnabled() {
         return enableDisasters;
     }
+    
+    /**
+     * Get the plugin instance
+     */
+    public JavaPlugin getPlugin() {
+        return plugin;
+    }
 }

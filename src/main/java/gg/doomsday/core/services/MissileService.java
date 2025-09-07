@@ -126,11 +126,11 @@ public class MissileService {
         
         // Send notifications to all players
         String nationId = getNationIdFromRocketKey(rocketKey);
-        broadcastMissileLaunch(world, nationId, start);
+        broadcastMissileLaunch(world, nationId, displayName, start);
         
         // Send confirmation to launching player
         player.sendMessage("§a§l🚀 " + displayName + " LAUNCHED!");
-        player.sendMessage("§7Target: " + (int)x2 + ", " + (int)y2 + ", " + (int)z2);
+        player.sendMessage("§fTarget: " + (int)x2 + ", " + (int)y2 + ", " + (int)z2);
         
         return true;
     }
@@ -138,9 +138,12 @@ public class MissileService {
     /**
      * Broadcast missile launch warning using the configurable messaging system
      */
-    private void broadcastMissileLaunch(World world, String nationId, Location launchLocation) {
+    private void broadcastMissileLaunch(World world, String nationId, String missileDisplayName, Location launchLocation) {
         String coloredNationName = NationColors.getColoredNationName(nationId);
-        String launchMsg = messageManager.getMessage("missile.launch", "nation", coloredNationName);
+        String nationColor = NationColors.getNationColor(nationId);
+        String launchMsg = messageManager.getMessage("missile.launch", 
+                new String[]{"missileType", "nation", "nationColor"}, 
+                new String[]{missileDisplayName, coloredNationName.replaceAll("§[0-9a-fk-or]", ""), nationColor});
         
         // Get the launching nation object
         Nation launchingNation = getLaunchingNationFromName(nationId);

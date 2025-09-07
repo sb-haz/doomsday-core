@@ -4,6 +4,7 @@ import gg.doomsday.core.gui.framework.GUIBuilder;
 import gg.doomsday.core.gui.framework.GUIManager;
 import gg.doomsday.core.gui.framework.NavigationGUI;
 import gg.doomsday.core.nations.NationManager;
+import gg.doomsday.core.gui.utils.GUIColors;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -24,9 +25,9 @@ public class AllMissilesGUI extends NavigationGUI {
         addBackButton(gui, 45, player);
         
         GUIBuilder.addTitleItem(gui, 4, org.bukkit.Material.TNT, 
-            "&c&lComplete Missile Arsenal",
-            "&7All missile types in the system",
-            "&7Learn about damage, effects, and usage");
+            GUIColors.MISSILE + GUIColors.BOLD + "Complete Missile Arsenal",
+            GUIColors.secondary("All missile types in the system"),
+            GUIColors.secondary("Learn about damage, effects, and usage"));
         
         return gui;
     }

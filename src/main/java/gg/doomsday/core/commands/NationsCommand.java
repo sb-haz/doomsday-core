@@ -101,11 +101,11 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
         gui.setItem(4, new ItemBuilder(Material.COMPASS)
                 .setDisplayName("&6&lDoomsday Nations")
                 .setLore(
-                    "&7Welcome to the Nations system!",
+                    "&fWelcome to the Nations system!",
                     "",
-                    "&7You are not currently in any nation.",
-                    "&7Explore the options below to learn more",
-                    "&7and choose a nation to join.",
+                    "&fYou are not currently in any nation.",
+                    "&fExplore the options below to learn more",
+                    "&fand choose a nation to join.",
                     "",
                     "&eClick on the options below to explore!"
                 )
@@ -115,11 +115,11 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
         gui.setItem(20, new ItemBuilder(Material.EMERALD)
                 .setDisplayName("&a&lJoin a Nation")
                 .setLore(
-                    "&7Choose your nation and join the fight!",
-                    "&7Each nation has unique advantages:",
-                    "&7• Different missile types",
-                    "&7• Unique natural disasters",
-                    "&7• Geographic locations",
+                    "&fChoose your nation and join the fight!",
+                    "&fEach nation has unique advantages:",
+                    "&f• Different missile types",
+                    "&f• Unique natural disasters",
+                    "&f• Geographic locations",
                     "",
                     "&eClick to view nation selection!"
                 )
@@ -129,11 +129,11 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
         gui.setItem(21, new ItemBuilder(Material.MAP)
                 .setDisplayName("&6&lExplore Nations")
                 .setLore(
-                    "&7Learn about all available nations:",
-                    "&7• Population and statistics",
-                    "&7• Available weapons and defenses",
-                    "&7• Natural disaster types",
-                    "&7• Geographic information",
+                    "&fLearn about all available nations:",
+                    "&f• Population and statistics",
+                    "&f• Available weapons and defenses",
+                    "&f• Natural disaster types",
+                    "&f• Geographic information",
                     "",
                     "&eClick to explore nations!"
                 )
@@ -143,12 +143,12 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
         gui.setItem(22, new ItemBuilder(Material.TNT)
                 .setDisplayName("&c&lMissile Arsenal")
                 .setLore(
-                    "&7View all available missile types:",
-                    "&7• R1 - Standard explosive missile",
-                    "&7• R2 - Bunker buster with drilling",
-                    "&7• R3 - Cluster bomb with spread",
-                    "&7• R4 - Thermobaric with magma",
-                    "&7• R5 - Nuclear with mushroom cloud",
+                    "&fView all available missile types:",
+                    "&f• R1 - Standard explosive missile",
+                    "&f• R2 - Bunker buster with drilling",
+                    "&f• R3 - Cluster bomb with spread",
+                    "&f• R4 - Thermobaric with magma",
+                    "&f• R5 - Nuclear with mushroom cloud",
                     "",
                     "&eClick to view missile details!"
                 )
@@ -158,11 +158,11 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
         gui.setItem(23, new ItemBuilder(Material.CROSSBOW)
                 .setDisplayName("&9&lAnti-Air Defenses")
                 .setLore(
-                    "&7Learn about defensive systems:",
-                    "&7• Automated interceptor systems",
-                    "&7• Manual defense operations",
-                    "&7• Range and accuracy stats",
-                    "&7• Nation-specific deployments",
+                    "&fLearn about defensive systems:",
+                    "&f• Automated interceptor systems",
+                    "&f• Manual defense operations",
+                    "&f• Range and accuracy stats",
+                    "&f• Nation-specific deployments",
                     "",
                     "&eClick to view defense systems!"
                 )
@@ -172,11 +172,11 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
         gui.setItem(24, new ItemBuilder(Material.BLAZE_POWDER)
                 .setDisplayName("&4&lNatural Disasters")
                 .setLore(
-                    "&7Discover nation-specific disasters:",
-                    "&7• America: Meteors, Wildfires, Tornadoes",
-                    "&7• Europe: Floods, Plagues, Storms",
-                    "&7• Africa: Droughts, Sandstorms",
-                    "&7• Antarctica: Blizzards, Ice Storms",
+                    "&fDiscover nation-specific disasters:",
+                    "&f• America: Meteors, Wildfires, Tornadoes",
+                    "&f• Europe: Floods, Plagues, Storms",
+                    "&f• Africa: Droughts, Sandstorms",
+                    "&f• Antarctica: Blizzards, Ice Storms",
                     "",
                     "&eClick to learn about disasters!"
                 )
@@ -186,11 +186,11 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
         gui.setItem(32, new ItemBuilder(Material.DIAMOND_PICKAXE)
                 .setDisplayName("&b&lCustom Items & Reinforcement")
                 .setLore(
-                    "&7Learn about special items:",
-                    "&7• Reinforcement Powder",
-                    "&7• Detection Helmets",
-                    "&7• Block reinforcement system",
-                    "&7• Crafting recipes",
+                    "&fLearn about special items:",
+                    "&f• Reinforcement Powder",
+                    "&f• Detection Helmets",
+                    "&f• Block reinforcement system",
+                    "&f• Crafting recipes",
                     "",
                     "&eClick to view item information!"
                 )
@@ -215,11 +215,11 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
         gui.setItem(4, new ItemBuilder(Material.PLAYER_HEAD)
                 .setDisplayName("&6&l" + player.getName())
                 .setLore(
-                    "&7Your Nation: &a" + nation.getDisplayName(),
-                    "&7Population: &f" + nation.getTotalPlayers(),
-                    "&7Region: &f" + getLocationDescription(nationId),
+                    "&fYour Nation: &a" + nation.getDisplayName(),
+                    "&fPopulation: &f" + nation.getTotalPlayers(),
+                    "&fRegion: &f" + getLocationDescription(nationId),
                     "",
-                    "&7Welcome back, citizen!"
+                    "&fWelcome back, citizen!"
                 )
                 .setSkullOwner(player.getName())
                 .build());
@@ -228,10 +228,10 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
         gui.setItem(20, new ItemBuilder(Material.GREEN_BANNER)
                 .setDisplayName("&a&lYour Nation Info")
                 .setLore(
-                    "&7View detailed nation information:",
-                    "&7• Population statistics",
-                    "&7• Territory boundaries",
-                    "&7• Military capabilities",
+                    "&fView detailed nation information:",
+                    "&f• Population statistics",
+                    "&f• Territory boundaries",
+                    "&f• Military capabilities",
                     "",
                     "&eClick to view details!"
                 )
@@ -241,10 +241,10 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
         gui.setItem(21, new ItemBuilder(Material.TNT)
                 .setDisplayName("&c&lYour Arsenal")
                 .setLore(
-                    "&7View your nation's missiles:",
-                    "&7• " + (nation.getMissileTypes() != null ? nation.getMissileTypes().size() : 0) + " missile types available",
-                    "&7• Detailed specifications",
-                    "&7• Usage commands",
+                    "&fView your nation's missiles:",
+                    "&f• " + (nation.getMissileTypes() != null ? nation.getMissileTypes().size() : 0) + " missile types available",
+                    "&f• Detailed specifications",
+                    "&f• Usage commands",
                     "",
                     "&eClick to view your missiles!"
                 )
@@ -254,10 +254,10 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
         gui.setItem(22, new ItemBuilder(Material.BLAZE_POWDER)
                 .setDisplayName("&4&lNatural Disasters")
                 .setLore(
-                    "&7View disasters in your region:",
-                    "&7• " + nation.getDisasters().size() + " disaster types",
-                    "&7• Current active disasters",
-                    "&7• Disaster descriptions and effects",
+                    "&fView disasters in your region:",
+                    "&f• " + nation.getDisasters().size() + " disaster types",
+                    "&f• Current active disasters",
+                    "&f• Disaster descriptions and effects",
                     "",
                     "&eClick to view disasters!"
                 )
@@ -267,10 +267,10 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
         gui.setItem(23, new ItemBuilder(Material.DIAMOND_PICKAXE)
                 .setDisplayName("&b&lCustom Items & Reinforcement")
                 .setLore(
-                    "&7Learn about special items:",
-                    "&7• Reinforcement system",
-                    "&7• Detection tools",
-                    "&7• Crafting information",
+                    "&fLearn about special items:",
+                    "&f• Reinforcement system",
+                    "&f• Detection tools",
+                    "&f• Crafting information",
                     "",
                     "&eClick to view item info!"
                 )
@@ -280,13 +280,13 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
         gui.setItem(24, new ItemBuilder(Material.MAP)
                 .setDisplayName("&6&lExplore Other Nations")
                 .setLore(
-                    "&7Learn about foreign nations:",
-                    "&7• Compare capabilities",
-                    "&7• View their arsenals",
-                    "&7• Understand their disasters",
-                    "&7• View all missile types",
-                    "&7• View all anti-air systems", 
-                    "&7• View all disaster types",
+                    "&fLearn about foreign nations:",
+                    "&f• Compare capabilities",
+                    "&f• View their arsenals",
+                    "&f• Understand their disasters",
+                    "&f• View all missile types",
+                    "&f• View all anti-air systems", 
+                    "&f• View all disaster types",
                     "",
                     "&eClick to explore!"
                 )
@@ -298,7 +298,7 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
             gui.setItem(49, new ItemBuilder(Material.BARRIER)
                     .setDisplayName("&c&lLeave Nation")
                     .setLore(
-                        "&7Leave " + nation.getDisplayName(),
+                        "&fLeave " + nation.getDisplayName(),
                         "&cWarning: You may not be able to rejoin immediately!",
                         "",
                         "&eClick to leave your nation"
@@ -306,10 +306,10 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
                     .build());
         } else {
             gui.setItem(49, new ItemBuilder(Material.GRAY_DYE)
-                    .setDisplayName("&8&lLeave Nation")
+                    .setDisplayName("&7&lLeave Nation")
                     .setLore(
-                        "&7You cannot leave your nation",
-                        "&7due to cooldown restrictions.",
+                        "&fYou cannot leave your nation",
+                        "&fdue to cooldown restrictions.",
                         "",
                         "&cLeaving is currently disabled"
                     )
@@ -415,8 +415,7 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
                 openCustomItemsGUI(player);
                 break;
             case 24: // Other Nations
-                nationGUI.pushToNavigationStackFromExternal(player, title);
-                nationGUI.openNationsListGUI(player);
+                nationGUI.openNationsListGUI(player, title);
                 break;
             case 49: // Leave Nation
                 UUID playerId = player.getUniqueId();
@@ -435,16 +434,16 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
         
         // Back button (on top of glass pane)
         gui.setItem(45, new ItemBuilder(Material.ARROW)
-                .setDisplayName("&7« Back")
-                .setLore("&7Return to previous menu")
+                .setDisplayName("&f« Back")
+                .setLore("&fReturn to previous menu")
                 .build());
         
         // Title
         gui.setItem(4, new ItemBuilder(Material.TNT)
                 .setDisplayName("&c&lComplete Missile Arsenal")
                 .setLore(
-                    "&7All missile types in the system",
-                    "&7Learn about damage, effects, and usage"
+                    "&fAll missile types in the system",
+                    "&fLearn about damage, effects, and usage"
                 )
                 .build());
         
@@ -462,16 +461,16 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
                 double arcScale = plugin.getConfig().getDouble("rockets." + missileKey + ".arcScale", 1.0);
                 
                 List<String> lore = new ArrayList<>();
-                lore.add("&7Type: &f" + explosionType);
-                lore.add("&7Speed: &f" + speed);
-                lore.add("&7Arc Scale: &f" + arcScale);
+                lore.add("&fType: &f" + explosionType);
+                lore.add("&fSpeed: &f" + speed);
+                lore.add("&fArc Scale: &f" + arcScale);
                 lore.add("");
-                lore.add("&7Nations with this missile:");
+                lore.add("&fNations with this missile:");
                 
                 // Check which nations have this missile
                 for (Nation nation : nationManager.getAllNations().values()) {
                     if (nation.getMissileTypes() != null && nation.getMissileTypes().contains(missileKey)) {
-                        lore.add("&7• &f" + nation.getDisplayName());
+                        lore.add("&f• &f" + nation.getDisplayName());
                     }
                 }
                 
@@ -498,16 +497,16 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
         
         // Back button (on top of glass pane)
         gui.setItem(45, new ItemBuilder(Material.ARROW)
-                .setDisplayName("&7« Back")
-                .setLore("&7Return to previous menu")
+                .setDisplayName("&f« Back")
+                .setLore("&fReturn to previous menu")
                 .build());
         
         // Title
         gui.setItem(4, new ItemBuilder(Material.CROSSBOW)
                 .setDisplayName("&9&lAnti-Aircraft Defense Systems")
                 .setLore(
-                    "&7Overview of all defensive systems",
-                    "&7Learn about interception capabilities"
+                    "&fOverview of all defensive systems",
+                    "&fLearn about interception capabilities"
                 )
                 .build());
         
@@ -515,34 +514,34 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
         gui.setItem(20, new ItemBuilder(Material.TARGET)
                 .setDisplayName("&a&lAutomated Systems")
                 .setLore(
-                    "&7AI-controlled interceptor systems",
-                    "&7• Automatic threat detection",
-                    "&7• High response time",
-                    "&7• Configurable accuracy",
-                    "&7• 24/7 operational capability"
+                    "&fAI-controlled interceptor systems",
+                    "&f• Automatic threat detection",
+                    "&f• High response time",
+                    "&f• Configurable accuracy",
+                    "&f• 24/7 operational capability"
                 )
                 .build());
         
         gui.setItem(22, new ItemBuilder(Material.LEVER)
                 .setDisplayName("&e&lManual Systems")
                 .setLore(
-                    "&7Player-operated defense systems",
-                    "&7• Requires nearby operators",
-                    "&7• Higher accuracy potential",
-                    "&7• Strategic positioning",
-                    "&7• Human decision making"
+                    "&fPlayer-operated defense systems",
+                    "&f• Requires nearby operators",
+                    "&f• Higher accuracy potential",
+                    "&f• Strategic positioning",
+                    "&f• Human decision making"
                 )
                 .build());
         
         gui.setItem(24, new ItemBuilder(Material.REDSTONE)
                 .setDisplayName("&c&lSystem Specifications")
                 .setLore(
-                    "&7Technical information:",
-                    "&7• Range: 50-200 blocks",
-                    "&7• Accuracy: 65-95%",
-                    "&7• Reload time: 3-8 seconds",
-                    "&7• Interceptor speed: 2-4x",
-                    "&7• Multiple targeting modes"
+                    "&fTechnical information:",
+                    "&f• Range: 50-200 blocks",
+                    "&f• Accuracy: 65-95%",
+                    "&f• Reload time: 3-8 seconds",
+                    "&f• Interceptor speed: 2-4x",
+                    "&f• Multiple targeting modes"
                 )
                 .build());
         
@@ -557,16 +556,16 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
         
         // Back button (on top of glass pane)
         gui.setItem(45, new ItemBuilder(Material.ARROW)
-                .setDisplayName("&7« Back")
-                .setLore("&7Return to previous menu")
+                .setDisplayName("&f« Back")
+                .setLore("&fReturn to previous menu")
                 .build());
         
         // Title
         gui.setItem(4, new ItemBuilder(Material.NETHER_STAR)
                 .setDisplayName("&4&lNatural Disasters Encyclopedia")
                 .setLore(
-                    "&7Complete guide to all disaster types",
-                    "&7Learn about effects and nation impacts"
+                    "&fComplete guide to all disaster types",
+                    "&fLearn about effects and nation impacts"
                 )
                 .build());
         
@@ -575,16 +574,16 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
                 .setDisplayName("&c&lAmerica Disasters")
                 .setLore(
                     "&6Meteor Showers:",
-                    "&7• TNT meteors with flame trails",
-                    "&7• Rare ore drops on impact",
+                    "&f• TNT meteors with flame trails",
+                    "&f• Rare ore drops on impact",
                     "",
                     "&6Wildfires:",
-                    "&7• Spreads fire through forests",
-                    "&7• Burns grasslands during dry periods",
+                    "&f• Spreads fire through forests",
+                    "&f• Burns grasslands during dry periods",
                     "",
                     "&6Tornadoes:",
-                    "&7• Moving vortex pulls players",
-                    "&7• Creates widespread chaos"
+                    "&f• Moving vortex pulls players",
+                    "&f• Creates widespread chaos"
                 )
                 .build());
         
@@ -593,16 +592,16 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
                 .setDisplayName("&a&lEurope Disasters")
                 .setLore(
                     "&9Flooding:",
-                    "&7• Rivers overflow extensively",
-                    "&7• Farmland gets completely wiped",
+                    "&f• Rivers overflow extensively",
+                    "&f• Farmland gets completely wiped",
                     "",
                     "&5Plagues:",
-                    "&7• Sickness spreads slowly",
-                    "&7• Causes hunger and weakness",
+                    "&f• Sickness spreads slowly",
+                    "&f• Causes hunger and weakness",
                     "",
                     "&8Storms:",
-                    "&7• Lightning strikes with fire chance",
-                    "&7• Environmental damage"
+                    "&f• Lightning strikes with fire chance",
+                    "&f• Environmental damage"
                 )
                 .build());
         
@@ -611,12 +610,12 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
                 .setDisplayName("&6&lAfrica Disasters")
                 .setLore(
                     "&6Droughts:",
-                    "&7• Water sources completely dry up",
-                    "&7• Crops fail, severe hunger effects",
+                    "&f• Water sources completely dry up",
+                    "&f• Crops fail, severe hunger effects",
                     "",
                     "&e Sandstorms:",
-                    "&7• Massive visibility reduction",
-                    "&7• Blindness and slow movement"
+                    "&f• Massive visibility reduction",
+                    "&f• Blindness and slow movement"
                 )
                 .build());
         
@@ -625,14 +624,14 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
                 .setDisplayName("&f&lAntarctica Disasters")
                 .setLore(
                     "&fBlizzards:",
-                    "&7• Heavy snow reduces visibility",
-                    "&7• Near-zero visibility conditions",
-                    "&7• Severe movement penalties",
+                    "&f• Heavy snow reduces visibility",
+                    "&f• Near-zero visibility conditions",
+                    "&f• Severe movement penalties",
                     "",
                     "&bIce Storms:",
-                    "&7• Freezing conditions everywhere",
-                    "&7• Water turns to ice blocks",
-                    "&7• Cold damage to players"
+                    "&f• Freezing conditions everywhere",
+                    "&f• Water turns to ice blocks",
+                    "&f• Cold damage to players"
                 )
                 .build());
         
@@ -647,16 +646,16 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
         
         // Back button (on top of glass pane)
         gui.setItem(45, new ItemBuilder(Material.ARROW)
-                .setDisplayName("&7« Back")
-                .setLore("&7Return to previous menu")
+                .setDisplayName("&f« Back")
+                .setLore("&fReturn to previous menu")
                 .build());
         
         // Title
         gui.setItem(4, new ItemBuilder(Material.DIAMOND_PICKAXE)
                 .setDisplayName("&b&lCustom Items & Systems")
                 .setLore(
-                    "&7Special items and reinforcement system",
-                    "&7Learn about crafting and usage"
+                    "&fSpecial items and reinforcement system",
+                    "&fLearn about crafting and usage"
                 )
                 .build());
         
@@ -664,21 +663,21 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
         gui.setItem(20, new ItemBuilder(Material.GUNPOWDER)
                 .setDisplayName("&e&lReinforcement Powder")
                 .setLore(
-                    "&7Strengthen blocks against explosions",
+                    "&fStrengthen blocks against explosions",
                     "",
-                    "&7Recipe (Shapeless):",
-                    "&7• 1x Iron Ingot",
-                    "&7• 1x Stone",
-                    "&7= 1x Reinforcement Powder",
+                    "&fRecipe (Shapeless):",
+                    "&f• 1x Iron Ingot",
+                    "&f• 1x Stone",
+                    "&f= 1x Reinforcement Powder",
                     "",
-                    "&7Usage:",
-                    "&7Right-click on blocks to reinforce them",
-                    "&7Reinforced blocks resist explosions",
+                    "&fUsage:",
+                    "&fRight-click on blocks to reinforce them",
+                    "&fReinforced blocks resist explosions",
                     "",
-                    "&7Resistance varies by block type:",
-                    "&7• Stone: 50%",
-                    "&7• Obsidian: 95%",
-                    "&7• Concrete: 60%"
+                    "&fResistance varies by block type:",
+                    "&f• Stone: 50%",
+                    "&f• Obsidian: 95%",
+                    "&f• Concrete: 60%"
                 )
                 .build());
         
@@ -686,36 +685,36 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
         gui.setItem(22, new ItemBuilder(Material.DIAMOND_HELMET)
                 .setDisplayName("&b&lDetection Helmet")
                 .setLore(
-                    "&7Visualize reinforced blocks",
+                    "&fVisualize reinforced blocks",
                     "",
-                    "&7Usage:",
-                    "&7Wear as helmet to activate",
-                    "&7Shows particles on reinforced blocks",
-                    "&7Works within 16 block radius",
+                    "&fUsage:",
+                    "&fWear as helmet to activate",
+                    "&fShows particles on reinforced blocks",
+                    "&fWorks within 16 block radius",
                     "",
-                    "&7Features:",
-                    "&7• Real-time scanning",
-                    "&7• Particle indicators",
-                    "&7• Range-based detection",
-                    "&7• Continuous updates while worn"
+                    "&fFeatures:",
+                    "&f• Real-time scanning",
+                    "&f• Particle indicators",
+                    "&f• Range-based detection",
+                    "&f• Continuous updates while worn"
                 )
                 .build());
         
         // Block System
         gui.setItem(24, new ItemBuilder(Material.OBSIDIAN)
-                .setDisplayName("&8&lReinforcement System")
+                .setDisplayName("&7&lReinforcement System")
                 .setLore(
-                    "&7Advanced block protection system",
+                    "&fAdvanced block protection system",
                     "",
-                    "&7How it works:",
-                    "&7• Apply powder to valid blocks",
-                    "&7• Blocks gain explosion resistance",
-                    "&7• Data saved across server restarts",
-                    "&7• Automatic cleanup of invalid blocks",
+                    "&fHow it works:",
+                    "&f• Apply powder to valid blocks",
+                    "&f• Blocks gain explosion resistance",
+                    "&f• Data saved across server restarts",
+                    "&f• Automatic cleanup of invalid blocks",
                     "",
-                    "&7Valid blocks:",
-                    "&7Stone, Cobblestone, Bricks, Concrete,",
-                    "&7and many more construction materials"
+                    "&fValid blocks:",
+                    "&fStone, Cobblestone, Bricks, Concrete,",
+                    "&fand many more construction materials"
                 )
                 .build());
         
@@ -980,12 +979,12 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
     
     private String getMissileDescription(String missileKey) {
         switch (missileKey.toLowerCase()) {
-            case "r1": return "&7Standard explosive with reliable damage";
-            case "r2": return "&7Bunker buster that drills deep underground";
-            case "r3": return "&7Cluster bomb with horizontal spread explosions";
-            case "r4": return "&7Thermobaric with magma block placement";
-            case "r5": return "&7Nuclear with massive mushroom cloud";
-            default: return "&7Advanced military-grade missile system";
+            case "r1": return "&fStandard explosive with reliable damage";
+            case "r2": return "&fBunker buster that drills deep underground";
+            case "r3": return "&fCluster bomb with horizontal spread explosions";
+            case "r4": return "&fThermobaric with magma block placement";
+            case "r5": return "&fNuclear with massive mushroom cloud";
+            default: return "&fAdvanced military-grade missile system";
         }
     }
     
@@ -1015,7 +1014,7 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
     // Helper method to add glass pane borders to GUIs
     private void addGlassPaneBorder(Inventory gui) {
         ItemStack glassPaneItem = new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE)
-                .setDisplayName("&7")
+                .setDisplayName("&f")
                 .build();
         
         // Top row (0-8)

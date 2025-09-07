@@ -73,9 +73,14 @@ public class GameScoreboard {
     }
     
     private void updateScoreboard() {
-        // Clear existing entries
+        // Clear existing entries and teams
         for (String entry : sidebarObjective.getScoreboard().getEntries()) {
             sidebarObjective.getScoreboard().resetScores(entry);
+        }
+        
+        // Clear all teams to prevent conflicts
+        for (Team team : mainScoreboard.getTeams()) {
+            team.unregister();
         }
         
         // Update title based on season
@@ -151,7 +156,25 @@ public class GameScoreboard {
             text += ChatColor.RESET;
         }
         
-        Score scoreEntry = sidebarObjective.getScore(text);
+        // Alternative method: Use teams to hide scores on older versions
+        String teamName = "line" + score;
+        Team team = mainScoreboard.getTeam(teamName);
+        if (team == null) {
+            team = mainScoreboard.registerNewTeam(teamName);
+        }
+        
+        // Use a unique player name for this line
+        String playerName = ChatColor.values()[Math.abs(score) % ChatColor.values().length].toString();
+        if (playerName.length() > 16) {
+            playerName = playerName.substring(0, 16);
+        }
+        
+        // Set the text as team prefix (supports up to 64 chars in newer versions)
+        team.setPrefix(text);
+        team.setSuffix("");
+        team.addEntry(playerName);
+        
+        Score scoreEntry = sidebarObjective.getScore(playerName);
         scoreEntry.setScore(score);
     }
     

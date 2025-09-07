@@ -7,6 +7,7 @@ import gg.doomsday.core.gui.utils.ItemBuilder;
 import gg.doomsday.core.nations.Nation;
 import gg.doomsday.core.nations.NationManager;
 import gg.doomsday.core.nations.NationPlayerManager;
+import gg.doomsday.core.defense.AntiAirDefenseManager;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -23,11 +24,13 @@ public class NationsOverviewGUI extends NavigationGUI {
     
     private final NationManager nationManager;
     private final NationPlayerManager playerManager;
+    private final AntiAirDefenseManager antiAirManager;
     
-    public NationsOverviewGUI(GUIManager guiManager, NationManager nationManager, NationPlayerManager playerManager) {
+    public NationsOverviewGUI(GUIManager guiManager, NationManager nationManager, NationPlayerManager playerManager, AntiAirDefenseManager antiAirManager) {
         super("Nations Overview", 54, guiManager);
         this.nationManager = nationManager;
         this.playerManager = playerManager;
+        this.antiAirManager = antiAirManager;
     }
     
     @Override
@@ -143,10 +146,10 @@ public class NationsOverviewGUI extends NavigationGUI {
                 guiManager.openGUI(player, new AllMissilesGUI(guiManager, nationManager));
                 return true;
             case 52: // All Anti-Air
-                // TODO: Implement AllAntiAirGUI
+                guiManager.openGUI(player, new AllAntiAirGUI(guiManager, antiAirManager));
                 return true;
             case 53: // All Disasters
-                // TODO: Implement AllDisastersGUI
+                guiManager.openGUI(player, new AllDisastersGUI(guiManager, nationManager));
                 return true;
         }
         

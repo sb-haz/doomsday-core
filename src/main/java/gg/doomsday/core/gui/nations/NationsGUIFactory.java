@@ -5,6 +5,7 @@ import gg.doomsday.core.gui.framework.GUIFactory;
 import gg.doomsday.core.gui.framework.GUIManager;
 import gg.doomsday.core.nations.NationManager;
 import gg.doomsday.core.nations.NationPlayerManager;
+import gg.doomsday.core.defense.AntiAirDefenseManager;
 import org.bukkit.entity.Player;
 
 /**
@@ -15,18 +16,20 @@ public class NationsGUIFactory implements GUIFactory {
     private final GUIManager guiManager;
     private final NationManager nationManager;
     private final NationPlayerManager playerManager;
+    private final AntiAirDefenseManager antiAirManager;
     
-    public NationsGUIFactory(GUIManager guiManager, NationManager nationManager, NationPlayerManager playerManager) {
+    public NationsGUIFactory(GUIManager guiManager, NationManager nationManager, NationPlayerManager playerManager, AntiAirDefenseManager antiAirManager) {
         this.guiManager = guiManager;
         this.nationManager = nationManager;
         this.playerManager = playerManager;
+        this.antiAirManager = antiAirManager;
     }
     
     @Override
     public GUI create(String title, Player player) {
         // Nations Overview
         if (title.equals("Nations Overview")) {
-            return new NationsOverviewGUI(guiManager, nationManager, playerManager);
+            return new NationsOverviewGUI(guiManager, nationManager, playerManager, antiAirManager);
         }
         
         // Nation Details
@@ -68,6 +71,16 @@ public class NationsGUIFactory implements GUIFactory {
         // All Missile Types
         if (title.equals("All Missile Types")) {
             return new AllMissilesGUI(guiManager, nationManager);
+        }
+        
+        // All Anti-Air Systems
+        if (title.equals("All Anti-Air Systems")) {
+            return new AllAntiAirGUI(guiManager, antiAirManager);
+        }
+        
+        // All Disaster Types
+        if (title.equals("All Disaster Types")) {
+            return new AllDisastersGUI(guiManager, nationManager);
         }
         
         return null;

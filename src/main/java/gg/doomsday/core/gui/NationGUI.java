@@ -154,9 +154,9 @@ public class NationGUI implements Listener {
         gui.setItem(4, new ItemBuilder(Material.PLAYER_HEAD)
                 .setDisplayName("&6&l" + player.getName())
                 .setLore(
-                    "&7Your Nation: " + (currentNation != null ? 
+                    "&fYour Nation: " + (currentNation != null ?
                         getColoredNationName(currentNation) : "&fNone"),
-                    "&7Can Switch: " + (canSwitch ? "&aYes" : "&cNo")
+                    "&fCan Switch: " + (canSwitch ? "&aYes" : "&cNo")
                 )
                 .setSkullOwner(player.getName())
                 .build());
@@ -201,7 +201,7 @@ public class NationGUI implements Listener {
             gui.setItem(49, new ItemBuilder(Material.BARRIER)
                     .setDisplayName("&c&lLeave Current Nation")
                     .setLore(
-                        "&7Leave your current nation",
+                        "&fLeave your current nation",
                         "&cWarning: You may not be able to rejoin immediately!",
                         "",
                         "&eClick to leave " + nationManager.getAllNations().get(currentNation).getDisplayName()
@@ -212,8 +212,8 @@ public class NationGUI implements Listener {
         // Add back button if there's a previous GUI
         if (hasBackButton("Select Your Nation", player)) {
             gui.setItem(45, new ItemBuilder(Material.ARROW)
-                    .setDisplayName("&7« Back")
-                    .setLore("&7Return to previous menu")
+                    .setDisplayName("&f« Back")
+                    .setLore("&fReturn to previous menu")
                     .build());
         }
         
@@ -248,10 +248,7 @@ public class NationGUI implements Listener {
         gui.setItem(4, new ItemBuilder(Material.PLAYER_HEAD)
                 .setDisplayName("&6&l" + player.getName())
                 .setLore(
-                    "&7Explore and learn about nations",
-                    "",
-                    "&7Your Nation: &f" + (currentNation != null ? 
-                        nationManager.getAllNations().get(currentNation).getDisplayName() : "None"),
+                    "&fExplore and learn about nations",
                     "",
                     currentNation == null ? "&cYou are not in any nation!" : "&aYou are in " + nationManager.getAllNations().get(currentNation).getDisplayName(),
                     "",
@@ -1112,7 +1109,7 @@ public class NationGUI implements Listener {
         
         // Reinforcement Systems
         gui.setItem(22, new ItemBuilder(Material.OBSIDIAN)
-                .setDisplayName("&8&lReinforced Structures")
+                .setDisplayName("&7&lReinforced Structures")
                 .setLore(
                     "&7Block reinforcement capabilities",
                     "&7• Reinforcement powder usage",
