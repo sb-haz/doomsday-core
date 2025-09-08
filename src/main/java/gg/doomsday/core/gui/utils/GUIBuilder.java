@@ -16,6 +16,7 @@ public class GUIBuilder {
     public static final String ITEMS_GUI_TITLE = "Custom Items";
     public static final String NATIONS_GUI_TITLE = "Nations & Disasters";
     public static final String MISSILE_INFO_GUI_TITLE = "Missile Information";
+    public static final String FUEL_DEPOT_GUI_TITLE = "Missile Fuel Depot";
     public static final String ANTIAIR_INFO_GUI_TITLE = "Anti-Air Information";
     
     private final Inventory inventory;
@@ -96,6 +97,11 @@ public class GUIBuilder {
     
     public static Inventory createMissileInfoGUI() {
         return new GUIBuilder(MISSILE_INFO_GUI_TITLE, 27)
+                .build();
+    }
+    
+    public static Inventory createFuelDepotGUI() {
+        return new GUIBuilder(FUEL_DEPOT_GUI_TITLE, 27)
                 .build();
     }
     

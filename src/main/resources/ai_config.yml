@@ -1,0 +1,30 @@
+# AI Chat Configuration
+ai:
+  # API key is now stored in api_keys.yml (not tracked by git)
+  # Get your DeepSeek API key from: https://platform.deepseek.com/
+  
+  # API settings
+  api_url: "https://api.deepseek.com/v1/chat/completions"
+  model: "deepseek-chat"
+  max_tokens: 150
+  temperature: 0.8
+  
+  # Rate limiting (per player)
+  rate_limit:
+    max_requests_per_minute: 10
+    max_requests_per_hour: 30
+  
+  # Memory settings
+  conversation_memory: 10  # Keep last 10 messages per player
+  
+  # AI message prefixes (supports color codes with &)
+  message_prefix: "&d[Private AI] &f"  # For private /ai commands
+  public_message_format: "&d[AI &7-> &d{player}] &f"  # For public @ai mentions - use {player} for player name
+
+  # System prompt
+  system_prompt: "You're the AI assistant for this Minecraft server. Theres 4 nations trying to blow each other up. Give very short responses (1 sentence max, 5-10 words max). Be witty and playful. Any commands you respond with put prefix &a and suffix &f. Give bare minimum responses, only answer what you're asking, pretend your playing on the server too. Use basic enough. Again short responses only."
+  
+  # Usage statistics
+  stats:
+    track_usage: true
+    log_requests: false  # Set to true for debugging

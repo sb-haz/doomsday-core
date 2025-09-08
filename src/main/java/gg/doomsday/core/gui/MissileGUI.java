@@ -4,6 +4,9 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -11,13 +14,15 @@ import org.bukkit.plugin.java.JavaPlugin;
 import gg.doomsday.core.gui.utils.GUIBuilder;
 import gg.doomsday.core.gui.utils.ItemBuilder;
 import gg.doomsday.core.services.MissileService;
+import gg.doomsday.core.fuel.MissileFuelManager;
+import gg.doomsday.core.DoomsdayCore;
 
 import java.util.List;
 
 /**
  * Handles all missile-related GUI operations
  */
-public class MissileGUI {
+public class MissileGUI implements Listener {
     
     private final JavaPlugin plugin;
     private final MissileService missileService;
@@ -25,6 +30,8 @@ public class MissileGUI {
     public MissileGUI(JavaPlugin plugin, MissileService missileService) {
         this.plugin = plugin;
         this.missileService = missileService;
+        // Register event listener to prevent item extraction
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
     
     /**
@@ -105,6 +112,14 @@ public class MissileGUI {
             return null;
         }
         
+        DoomsdayCore doomsdayCore = (DoomsdayCore) plugin;
+        MissileFuelManager fuelManager = doomsdayCore.getFuelManager();
+        
+        // Get fuel information
+        ConfigurationSection rocket = plugin.getConfig().getConfigurationSection("rockets." + rocketKey);
+        int fuelRequired = rocket != null ? rocket.getInt("fuelRequired", 0) : 0;
+        int fuelAvailable = fuelManager.getFuel(rocketKey);
+        
         Inventory gui = GUIBuilder.createMissileInfoGUI();
         
         // Main info item
@@ -122,32 +137,40 @@ public class MissileGUI {
                     "§7Target Position:",
                     "§f  " + formatLocation(info.getEndLocation()),
                     "",
-                    "§e> Use /r " + info.getKey() + " to launch this missile"
+                    "§7Fuel Required: §6" + fuelRequired,
+                    "§7Fuel Available: " + (fuelAvailable >= fuelRequired ? "§a" : "§c") + fuelAvailable,
+                    "",
+                    "§8Rocket Key: " + rocketKey
                 )
                 .build();
         gui.setItem(13, infoItem);
         
-        // Launch button
-        ItemStack launchItem = new ItemBuilder(Material.FIRE_CHARGE)
-                .setDisplayName("§a§lLaunch Missile")
+        // Launch button - only enabled if enough fuel
+        boolean canLaunch = fuelAvailable >= fuelRequired;
+        ItemStack launchItem = new ItemBuilder(canLaunch ? Material.FIRE_CHARGE : Material.BARRIER)
+                .setDisplayName(canLaunch ? "§a§lLaunch Missile" : "§c§lInsufficient Fuel")
                 .setLore(
-                    "§7Click to launch " + info.getDisplayName(),
+                    canLaunch ? "§7Click to launch " + info.getDisplayName() : "§7Not enough fuel to launch",
                     "",
-                    "§e> Click to execute launch command"
+                    canLaunch ? "§e> Click to execute launch" : "§c> Need " + (fuelRequired - fuelAvailable) + " more fuel"
                 )
                 .build();
         gui.setItem(11, launchItem);
         
-        // Teleport to target button
-        ItemStack targetItem = new ItemBuilder(Material.ENDER_PEARL)
-                .setDisplayName("§b§lTeleport to Target")
+        // Fuel depot button
+        ItemStack fuelItem = new ItemBuilder(Material.BLAZE_POWDER)
+                .setDisplayName("§6§lFuel Depot")
                 .setLore(
-                    "§7Teleport to the target location",
+                    "§7Manage missile fuel",
                     "",
-                    "§e> Click to teleport to target coordinates"
+                    "§7Current Fuel: §6" + fuelAvailable,
+                    "§7Required: §e" + fuelRequired,
+                    "",
+                    "§e> Click to deposit rocket fuel"
                 )
                 .build();
-        gui.setItem(15, targetItem);
+        gui.setItem(12, fuelItem);
+        
         
         return gui;
     }
@@ -202,10 +225,289 @@ public class MissileGUI {
     public boolean handleMissileInfoClick(Player player, String displayName, Inventory inventory) {
         if (displayName.contains("Launch Missile")) {
             return handleMissileInfoLaunch(player, inventory);
-        } else if (displayName.contains("Teleport to Target")) {
-            return handleMissileInfoTeleport(player, inventory);
+        } else if (displayName.contains("Fuel Depot")) {
+            return handleFuelDepotClick(player, inventory);
         }
         return false;
+    }
+    
+    /**
+     * Create fuel depot GUI for a specific missile
+     */
+    public Inventory createFuelDepotGUI(String rocketKey) {
+        MissileService.MissileInfo info = missileService.getMissileInfo(rocketKey);
+        if (info == null) {
+            return null;
+        }
+        
+        DoomsdayCore doomsdayCore = (DoomsdayCore) plugin;
+        MissileFuelManager fuelManager = doomsdayCore.getFuelManager();
+        
+        // Get fuel information
+        ConfigurationSection rocket = plugin.getConfig().getConfigurationSection("rockets." + rocketKey);
+        int fuelRequired = rocket != null ? rocket.getInt("fuelRequired", 0) : 0;
+        int fuelAvailable = fuelManager.getFuel(rocketKey);
+        
+        // Use the proper foundation classes
+        Inventory gui = gg.doomsday.core.gui.framework.GUIBuilder.createInventory("Missile Fuel Depot", 27);
+        
+        // Add glass pane border
+        ItemStack glassBorder = new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE)
+                .setDisplayName(" ")
+                .build();
+        
+        // Fill border slots for 27-slot GUI
+        for (int i = 0; i < 9; i++) {
+            gui.setItem(i, glassBorder); // Top row
+            gui.setItem(18 + i, glassBorder); // Bottom row
+        }
+        gui.setItem(9, glassBorder); // Left middle
+        gui.setItem(17, glassBorder); // Right middle
+        
+        // Missile info item (center top)
+        ItemStack missileItem = new ItemBuilder(Material.TNT)
+                .setDisplayName("§c" + info.getDisplayName())
+                .setLore(
+                    "§7Fuel Management System",
+                    "",
+                    "§7Required: §6" + fuelRequired,
+                    "§7Available: " + (fuelAvailable >= fuelRequired ? "§a" : "§c") + fuelAvailable,
+                    "",
+                    "§8" + rocketKey
+                )
+                .build();
+        gui.setItem(4, missileItem);
+        
+        // Deposit 1 fuel button
+        ItemStack deposit1Item = new ItemBuilder(Material.BLAZE_POWDER)
+                .setDisplayName("§6§lDeposit 1 Fuel")
+                .setLore(
+                    "§7Deposits 1 rocket fuel from inventory",
+                    "",
+                    "§e> Click to deposit"
+                )
+                .build();
+        gui.setItem(11, deposit1Item);
+        
+        // Deposit 10 fuel button
+        ItemStack deposit10Item = new ItemBuilder(Material.BLAZE_POWDER)
+                .setDisplayName("§6§lDeposit 10 Fuel")
+                .setLore(
+                    "§7Deposits 10 rocket fuel from inventory", 
+                    "",
+                    "§e> Click to deposit"
+                )
+                .build();
+        gui.setItem(13, deposit10Item);
+        
+        // Deposit 64 fuel button
+        ItemStack deposit64Item = new ItemBuilder(Material.BLAZE_POWDER)
+                .setDisplayName("§6§lDeposit 64 Fuel")
+                .setLore(
+                    "§7Deposits 64 rocket fuel from inventory",
+                    "",
+                    "§e> Click to deposit"
+                )
+                .build();
+        gui.setItem(15, deposit64Item);
+        
+        // Back button
+        ItemStack backItem = new ItemBuilder(Material.ARROW)
+                .setDisplayName("§7§lBack")
+                .setLore(
+                    "§7Return to missile information"
+                )
+                .build();
+        gui.setItem(22, backItem);
+        
+        return gui;
+    }
+    
+    /**
+     * Handle fuel depot GUI clicks  
+     */
+    public boolean handleFuelDepotClick(Player player, String displayName, Inventory inventory) {
+        // Extract rocket key from missile info item in slot 4
+        ItemStack infoItem = inventory.getItem(4);
+        if (infoItem == null || !infoItem.hasItemMeta()) {
+            player.sendMessage("§cError: Could not identify missile for fuel depot");
+            player.closeInventory();
+            return false;
+        }
+        
+        List<String> lore = infoItem.getItemMeta().getLore();
+        String rocketKey = extractRocketKeyFromInfoLore(lore);
+        
+        if (rocketKey == null) {
+            player.sendMessage("§cError: Could not identify missile for fuel depot");
+            player.closeInventory();
+            return false;
+        }
+        
+        if (displayName.contains("Deposit") && displayName.contains("Fuel")) {
+            return handleFuelDeposit(player, displayName, rocketKey);
+        } else if (displayName.contains("Back")) {
+            // Open missile info GUI
+            Inventory missileInfoGUI = createMissileInfoGUI(rocketKey);
+            if (missileInfoGUI != null) {
+                player.openInventory(missileInfoGUI);
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Handle fuel depot button click from missile info GUI
+     */
+    private boolean handleFuelDepotClick(Player player, Inventory inventory) {
+        // Extract rocket key from info item
+        ItemStack infoItem = inventory.getItem(13);
+        if (infoItem == null || !infoItem.hasItemMeta()) {
+            player.sendMessage("§cError: Could not identify missile for fuel depot");
+            player.closeInventory();
+            return false;
+        }
+        
+        List<String> lore = infoItem.getItemMeta().getLore();
+        String rocketKey = extractRocketKeyFromInfoLore(lore);
+        
+        if (rocketKey == null) {
+            player.sendMessage("§cError: Could not identify missile for fuel depot");
+            player.closeInventory();
+            return false;
+        }
+        
+        // Open fuel depot GUI
+        Inventory fuelDepotGUI = createFuelDepotGUI(rocketKey);
+        if (fuelDepotGUI != null) {
+            player.closeInventory();
+            player.openInventory(fuelDepotGUI);
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Handle fuel deposit action
+     */
+    private boolean handleFuelDeposit(Player player, String displayName, String rocketKey) {
+        int depositAmount = 1;
+        
+        // Determine deposit amount from display name
+        if (displayName.contains("64")) {
+            depositAmount = 64;
+        } else if (displayName.contains("10")) {
+            depositAmount = 10;
+        } // else defaults to 1
+        
+        // Check if player has enough rocket fuel in inventory
+        int availableFuel = countRocketFuelInInventory(player);
+        if (availableFuel < depositAmount) {
+            player.sendMessage("§cYou need " + depositAmount + " rocket fuel but only have " + availableFuel + "!");
+            return false;
+        }
+        
+        // Remove fuel from inventory first
+        if (!removeRocketFuelFromInventory(player, depositAmount)) {
+            player.sendMessage("§cFailed to remove rocket fuel from inventory!");
+            return false;
+        }
+        
+        // Add fuel to missile
+        DoomsdayCore doomsdayCore = (DoomsdayCore) plugin;
+        MissileFuelManager fuelManager = doomsdayCore.getFuelManager();
+        
+        if (fuelManager.addFuel(rocketKey, depositAmount)) {
+            player.sendMessage("§a§l✅ DEPOSITED " + depositAmount + " FUEL!");
+            
+            // Refresh fuel depot GUI immediately 
+            Inventory newFuelDepotGUI = createFuelDepotGUI(rocketKey);
+            if (newFuelDepotGUI != null) {
+                player.openInventory(newFuelDepotGUI);
+            }
+            return true;
+        } else {
+            // If fuel manager fails, give fuel back to player
+            DoomsdayCore core = (DoomsdayCore) plugin;
+            var customItemManager = core.getReinforcementHandler().getCustomItemManager();
+            ItemStack refund = customItemManager.createRocketFuel(depositAmount);
+            player.getInventory().addItem(refund);
+            player.sendMessage("§cFailed to deposit fuel! Items returned to inventory.");
+            return false;
+        }
+    }
+    
+    /**
+     * Count rocket fuel items in player inventory
+     */
+    private int countRocketFuelInInventory(Player player) {
+        int count = 0;
+        for (ItemStack item : player.getInventory().getContents()) {
+            if (item != null && isRocketFuel(item)) {
+                count += item.getAmount();
+            }
+        }
+        return count;
+    }
+    
+    /**
+     * Remove rocket fuel from player inventory
+     */
+    private boolean removeRocketFuelFromInventory(Player player, int amount) {
+        int remaining = amount;
+        
+        for (ItemStack item : player.getInventory().getContents()) {
+            if (remaining <= 0) break;
+            
+            if (item != null && isRocketFuel(item)) {
+                int itemAmount = item.getAmount();
+                if (itemAmount <= remaining) {
+                    remaining -= itemAmount;
+                    item.setAmount(0);
+                } else {
+                    item.setAmount(itemAmount - remaining);
+                    remaining = 0;
+                }
+            }
+        }
+        
+        return remaining == 0;
+    }
+    
+    /**
+     * Check if an item is rocket fuel
+     */
+    private boolean isRocketFuel(ItemStack item) {
+        if (item == null || !item.hasItemMeta()) {
+            return false;
+        }
+        
+        String displayName = item.getItemMeta().getDisplayName();
+        return displayName != null && displayName.contains("Rocket Fuel");
+    }
+    
+    /**
+     * Extract rocket key from missile info lore
+     */
+    private String extractRocketKeyFromInfoLore(List<String> lore) {
+        // Look for a line starting with "§8" (hidden text) which contains the rocket key
+        for (String line : lore) {
+            if (line.startsWith("§8") && !line.contains("Rocket Key:")) {
+                // Remove color codes and return the rocket key
+                return line.replaceAll("§[0-9a-fk-or]", "").trim();
+            }
+        }
+        
+        // Fallback: look for "Rocket Key:" format  
+        for (String line : lore) {
+            if (line.contains("Rocket Key:")) {
+                return line.replaceAll("§[0-9a-fk-or]", "").replace("Rocket Key:", "").trim();
+            }
+        }
+        
+        return null;
     }
     
     private ItemStack createCountryHeader(String countryName, String description1, String description2, Material bannerMaterial) {
@@ -299,14 +601,11 @@ public class MissileGUI {
         }
         
         List<String> lore = infoItem.getItemMeta().getLore();
-        for (String line : lore) {
-            if (line.contains("Use /r ") && line.contains(" to launch")) {
-                String rocketKey = extractRocketKeyFromLore(line);
-                if (rocketKey != null) {
-                    player.closeInventory();
-                    return missileService.launchMissileViaGUI(player, rocketKey);
-                }
-            }
+        String rocketKey = extractRocketKeyFromInfoLore(lore);
+        
+        if (rocketKey != null) {
+            player.closeInventory();
+            return missileService.launchMissileViaGUI(player, rocketKey);
         }
         
         player.sendMessage("§cError: Could not identify missile to launch");
@@ -314,30 +613,6 @@ public class MissileGUI {
         return false;
     }
     
-    private boolean handleMissileInfoTeleport(Player player, Inventory inventory) {
-        // Extract target coordinates from info item lore
-        ItemStack infoItem = inventory.getItem(13);
-        if (infoItem == null || !infoItem.hasItemMeta()) {
-            player.sendMessage("§cError: Could not identify target location");
-            player.closeInventory();
-            return false;
-        }
-        
-        List<String> lore = infoItem.getItemMeta().getLore();
-        Location targetLocation = extractTargetLocationFromLore(lore);
-        
-        if (targetLocation == null) {
-            player.sendMessage("§cError: Could not identify target location");
-            player.closeInventory();
-            return false;
-        }
-        
-        player.closeInventory();
-        Location teleportLoc = new Location(player.getWorld(), targetLocation.getX(), targetLocation.getY() + 1, targetLocation.getZ());
-        player.teleport(teleportLoc);
-        player.sendMessage("§a§lTeleported to missile target location!");
-        return true;
-    }
     
     private String extractRocketKeyFromLore(String loreLine) {
         String cleanLine = loreLine.replaceAll("§[0-9a-fk-or]", "");
@@ -350,25 +625,59 @@ public class MissileGUI {
         return null;
     }
     
-    private Location extractTargetLocationFromLore(List<String> lore) {
-        for (int i = 0; i < lore.size() - 1; i++) {
-            String line = lore.get(i);
-            if (line.contains("Target Position:")) {
-                String coordLine = lore.get(i + 1).replaceAll("§[0-9a-fk-or]", "");
-                try {
-                    String[] parts = coordLine.trim().split(" ");
-                    double x = 0, y = 0, z = 0;
-                    for (int j = 0; j < parts.length - 1; j++) {
-                        if (parts[j].equals("X:")) x = Double.parseDouble(parts[j + 1]);
-                        else if (parts[j].equals("Y:")) y = Double.parseDouble(parts[j + 1]);
-                        else if (parts[j].equals("Z:")) z = Double.parseDouble(parts[j + 1]);
-                    }
-                    return new Location(null, x, y, z);
-                } catch (Exception e) {
-                    return null;
-                }
-            }
+    /**
+     * Event handler to prevent item extraction from GUIs and handle clicks
+     */
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (!(event.getWhoClicked() instanceof Player)) return;
+        
+        Player player = (Player) event.getWhoClicked();
+        String title = event.getView().getTitle();
+        ItemStack clickedItem = event.getCurrentItem();
+        
+        // Handle missile info GUI clicks
+        if (title.equals("Missile Information")) {
+            event.setCancelled(true); // CRITICAL: Prevent item extraction
+            
+            if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
+            
+            String displayName = clickedItem.getItemMeta() != null ? 
+                clickedItem.getItemMeta().getDisplayName() : "";
+            
+            // Handle button clicks
+            handleMissileInfoClick(player, displayName, event.getInventory());
+            return;
         }
-        return null;
+        
+        // Handle fuel depot GUI clicks  
+        if (title.equals("Missile Fuel Depot")) {
+            event.setCancelled(true); // CRITICAL: Prevent item extraction
+            
+            if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
+            
+            String displayName = clickedItem.getItemMeta() != null ? 
+                clickedItem.getItemMeta().getDisplayName() : "";
+            
+            // Handle fuel depot button clicks
+            handleFuelDepotClick(player, displayName, event.getInventory());
+            return;
+        }
+        
+        // Handle main rockets GUI clicks
+        if (title.equals("Rocket Arsenal")) {
+            event.setCancelled(true); // CRITICAL: Prevent item extraction
+            
+            if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
+            
+            String displayName = clickedItem.getItemMeta() != null ? 
+                clickedItem.getItemMeta().getDisplayName() : "";
+            
+            // Handle rocket selection clicks
+            boolean isLeftClick = event.getClick().isLeftClick();
+            handleRocketClick(player, displayName, isLeftClick);
+            return;
+        }
     }
+    
 }

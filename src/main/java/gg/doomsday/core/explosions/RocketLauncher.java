@@ -228,14 +228,14 @@ public class RocketLauncher {
                 Location trailLoc = center.clone().add(direction.clone().multiply(-0.9));
                 trailLoc.add(0, smokeOffset, 0);
 
-                center.getWorld().spawnParticle(Particle.SMOKE_LARGE, trailLoc, 2, 0.10, 0.10, 0.10, 0.01);
+                center.getWorld().spawnParticle(Particle.SMOKE_NORMAL, trailLoc, 2, 0.10, 0.10, 0.10, 0.01);
                 center.getWorld().spawnParticle(Particle.FLAME, trailLoc, 1, 0.05, 0.05, 0.05, 0.01);
                 
                 // Trail particles behind rocket
                 for (double d = 0.5; d <= 2.0; d += 0.5) {
                     Location step = center.clone().add(direction.clone().multiply(-d));
                     step.add(0, smokeOffset, 0);
-                    center.getWorld().spawnParticle(Particle.SMOKE_NORMAL, step, 1, 0.03, 0.03, 0.03, 0.0);
+                    center.getWorld().spawnParticle(Particle.SMOKE_LARGE, step, 1, 0.03, 0.03, 0.03, 0.0);
                 }
             }
 

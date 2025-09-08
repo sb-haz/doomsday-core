@@ -133,6 +133,49 @@ public class CustomItemManager {
         return item;
     }
     
+    public ItemStack createRocketFuel() {
+        // Load configuration values
+        String materialName = customItemsConfig.getString("rocket_fuel.material", "BLAZE_POWDER");
+        int customModelData = customItemsConfig.getInt("rocket_fuel.custom_model_data", 2003);
+        String displayName = customItemsConfig.getString("rocket_fuel.display_name", "&6Rocket Fuel");
+        List<String> loreLines = customItemsConfig.getStringList("rocket_fuel.lore");
+        
+        // Parse material
+        Material material;
+        try {
+            material = Material.valueOf(materialName.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            plugin.getLogger().warning("Invalid material '" + materialName + "' in custom_items.yml, using BLAZE_POWDER");
+            material = Material.BLAZE_POWDER;
+        }
+        
+        // Create item
+        ItemStack item = new ItemStack(material);
+        ItemMeta meta = item.getItemMeta();
+        
+        // Set display name with color codes
+        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', displayName));
+        
+        // Set lore with color codes
+        List<String> processedLore = new ArrayList<>();
+        for (String line : loreLines) {
+            processedLore.add(ChatColor.translateAlternateColorCodes('&', line));
+        }
+        meta.setLore(processedLore);
+        
+        // Set custom model data
+        meta.setCustomModelData(customModelData);
+        
+        item.setItemMeta(meta);
+        return item;
+    }
+    
+    public ItemStack createRocketFuel(int amount) {
+        ItemStack fuel = createRocketFuel();
+        fuel.setAmount(Math.max(1, Math.min(64, amount)));
+        return fuel;
+    }
+    
     public boolean isReinforcementPowder(ItemStack item) {
         if (item == null) return false;
         

@@ -1,0 +1,105 @@
+# Chat Configuration for Doomsday Core
+# Configure how chat messages are formatted
+
+chat:
+  # Enable custom chat formatting (set to false to disable)
+  enabled: true
+  
+  # Chat format with nation prefix
+  # Available placeholders:
+  # {nation} - Player's nation display name
+  # {role} - Player's role (only visible to same nation members)
+  # {player} - Player's name
+  # {suffix} - LuckPerms suffix (if available)
+  # {message} - The actual chat message
+  format_with_nation: "&7({nation}{role}) &f{player}{suffix}&7: &f{message}"
+  
+  # Chat format without nation prefix
+  # Available placeholders:
+  # {player} - Player's name
+  # {suffix} - LuckPerms suffix (if available)
+  # {message} - The actual chat message
+  format_without_nation: "&f{player}{suffix}&7: &f{message}"
+  
+  # Suffix formatting
+  suffix:
+    # Add space before suffix if it exists
+    add_space_before: true
+    # Suffix prefix (text to add before the suffix)
+    prefix: ""
+    # Suffix suffix (text to add after the suffix)
+    suffix: ""
+  
+  # Nation formatting
+  nation:
+    # Color for nation names in parentheses
+    color: "&7"
+    # Brackets around nation name
+    bracket_open: "("
+    bracket_close: ")"
+  
+  # Role formatting (only visible to same nation members)
+  roles:
+    # Enable role display in chat
+    enabled: true
+    # Show roles only to same nation members
+    same_nation_only: true
+    # Role separator (text between nation and role)
+    separator: " "
+    # Role format
+    format: "&8{role}"
+    # Show role for Citizens (default role)
+    show_citizen_role: false
+  
+  # Console logging
+  console:
+    # Log chat messages to console
+    enabled: true
+    # Include colors in console log (some consoles don't support colors)
+    include_colors: false
+  
+  # Debug mode
+  debug: false
+
+# Nation Chat Configuration (/n command)
+nation_chat:
+  # Enable nation chat functionality
+  enabled: true
+  
+  # Nation chat format
+  # Available placeholders:
+  # {nation} - Player's nation display name (optional - they already know their nation)
+  # {player} - Player's name
+  # {suffix} - LuckPerms suffix (if available)
+  # {message} - The chat message
+  format: "&6[NATION] &f{player}{suffix}&7: &f{message}"
+  
+  # Alternative format if you want to show nation name
+  # format: "&6[NATION] &7({nation}) &f{player}{suffix}&7: &f{message}"
+  
+  # Suffix formatting for nation chat
+  suffix:
+    # Add space before suffix if it exists
+    add_space_before: true
+    # Suffix prefix (text to add before the suffix)
+    prefix: ""
+    # Suffix suffix (text to add after the suffix)
+    suffix: ""
+  
+  # Console logging for nation chat
+  console:
+    # Log nation chat messages to console
+    enabled: true
+    # Include colors in console log (some consoles don't support colors)
+    include_colors: false
+    # Console prefix for nation chat logs
+    prefix: "[NATION-CHAT]"
+  
+  # Feedback messages
+  messages:
+    # Message when player has no nation
+    no_nation: "&cYou must be in a nation to use nation chat!"
+    # Message when no other nation members are online
+    no_recipients: "&eNo other nation members are online to receive your message."
+    # Usage message
+    usage: "&cUsage: /n <message>"

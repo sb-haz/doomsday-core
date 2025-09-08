@@ -104,7 +104,7 @@ public class ReinforcementDetectorManager {
                 );
                 
                 player.spawnParticle(
-                    Particle.REDSTONE,
+                    Particle.BUBBLE_POP,
                     faceLocation,
                     3,
                     0.1, 0.1, 0.1,

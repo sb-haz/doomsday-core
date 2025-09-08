@@ -14,6 +14,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
@@ -75,6 +76,8 @@ public class RocketCommand implements CommandExecutor, TabCompleter {
                 return handlePowder(player, args);
             case "helmet":
                 return handleHelmet(player, args);
+            case "fuel":
+                return handleFuel(player, args);
             case "items":
                 return handleItems(player);
             default:
@@ -195,6 +198,41 @@ public class RocketCommand implements CommandExecutor, TabCompleter {
         return true;
     }
     
+    private boolean handleFuel(Player player, String[] args) {
+        if (!player.hasPermission("rocket.fuel")) {
+            player.sendMessage(ChatColor.RED + "You don't have permission to get rocket fuel!");
+            return true;
+        }
+        
+        int amount = 1;
+        if (args.length >= 2) {
+            try {
+                amount = Integer.parseInt(args[1]);
+                if (amount < 1 || amount > 64) {
+                    player.sendMessage(ChatColor.RED + "Amount must be between 1 and 64!");
+                    return true;
+                }
+            } catch (NumberFormatException e) {
+                player.sendMessage(ChatColor.RED + "Invalid amount! Use a number between 1 and 64.");
+                return true;
+            }
+        }
+        
+        // Create and give rocket fuel item
+        var customItemManager = reinforcementHandler.getCustomItemManager();
+        try {
+            ItemStack rocketFuel = customItemManager.createRocketFuel(amount);
+            player.getInventory().addItem(rocketFuel);
+            player.sendMessage(ChatColor.GREEN + "✅ Given " + amount + " rocket fuel!");
+            player.sendMessage(ChatColor.GRAY + "Use this fuel to power missiles for launches.");
+        } catch (Exception e) {
+            player.sendMessage(ChatColor.RED + "❌ Failed to give rocket fuel. Check server logs.");
+            plugin.getLogger().warning("Error giving rocket fuel to " + player.getName() + ": " + e.getMessage());
+        }
+        
+        return true;
+    }
+    
     private boolean handleItems(Player player) {
         if (!player.hasPermission("rocket.reload")) {
             player.sendMessage(ChatColor.RED + "You don't have permission to reload configs!");
@@ -236,6 +274,10 @@ public class RocketCommand implements CommandExecutor, TabCompleter {
             player.sendMessage(ChatColor.YELLOW + "/rocket helmet [amount]" + ChatColor.GRAY + " - Get detection helmets");
         }
         
+        if (player.hasPermission("rocket.fuel")) {
+            player.sendMessage(ChatColor.YELLOW + "/rocket fuel [amount]" + ChatColor.GRAY + " - Get rocket fuel");
+        }
+        
         player.sendMessage("");
         player.sendMessage(ChatColor.GRAY + "Available missiles: Use /rocket options to view all configured missiles");
     }
@@ -246,7 +288,7 @@ public class RocketCommand implements CommandExecutor, TabCompleter {
             List<String> completions = new ArrayList<>();
             
             // Add subcommands
-            completions.addAll(Arrays.asList("reload", "options", "config", "powder", "helmet", "items"));
+            completions.addAll(Arrays.asList("reload", "options", "config", "powder", "helmet", "fuel", "items"));
             
             // Add configured missile names
             ConfigurationSection rocketsSection = plugin.getConfig().getConfigurationSection("rockets");
@@ -259,7 +301,7 @@ public class RocketCommand implements CommandExecutor, TabCompleter {
         
         if (args.length == 2) {
             String subCommand = args[0].toLowerCase();
-            if (subCommand.equals("powder") || subCommand.equals("helmet")) {
+            if (subCommand.equals("powder") || subCommand.equals("helmet") || subCommand.equals("fuel")) {
                 return Arrays.asList("1", "2", "4", "8", "16", "32", "64");
             }
         }

@@ -1,0 +1,140 @@
+# ========================================
+# ROLE CLAIM ITEMS CONFIGURATION
+# ========================================
+# Configure role claim items appearance and behavior
+# These items allow players to claim nation roles during the claim window
+# 
+# Color Codes:
+# &0 = Black    &1 = Dark Blue   &2 = Dark Green  &3 = Dark Aqua
+# &4 = Dark Red &5 = Dark Purple &6 = Gold        &7 = Gray
+# &8 = Dark Gray &9 = Blue       &a = Green       &b = Aqua
+# &c = Red      &d = Light Purple &e = Yellow     &f = White
+#
+# Formatting:
+# &l = Bold     &o = Italic      &n = Underline   &m = Strikethrough
+# &k = Magic    &r = Reset
+# ========================================
+
+president_claim:
+  material: GOLDEN_SWORD
+  custom_model_data: 3001
+  display_name: "&6&lPresidential Badge"
+  role: "President"
+  lore:
+    - "&7Right-click to claim the &6President &7role"
+    - "&7in your nation during the claim window"
+    - ""
+    - "&fRole Benefits:"
+    - "&7• &6Full nation authority"
+    - "&7• &6Command over all nation members"
+    - "&7• &6Access to special abilities"
+    - ""
+    - "&c⚠ &7Only &c1 slot &7available per nation"
+    - "&8Limited time offer - claim fast!"
+
+armychief_claim:
+  material: IRON_SWORD
+  custom_model_data: 3002
+  display_name: "&c&lArmy Chief Badge"
+  role: "ArmyChief"
+  lore:
+    - "&7Right-click to claim the &cArmy Chief &7role"
+    - "&7in your nation during the claim window"
+    - ""
+    - "&fRole Benefits:"
+    - "&7• &cMilitary command authority"
+    - "&7• &cAccess to combat bonuses"
+    - "&7• &cSpecial military equipment"
+    - ""
+    - "&c⚠ &7Only &c1 slot &7available per nation"
+    - "&8Strategic leadership required"
+
+soldier_claim:
+  material: STONE_SWORD
+  custom_model_data: 3003
+  display_name: "&4&lSoldier Badge"
+  role: "Soldier"
+  lore:
+    - "&7Right-click to claim a &4Soldier &7role"
+    - "&7in your nation during the claim window"
+    - ""
+    - "&fRole Benefits:"
+    - "&7• &4Combat effectiveness bonuses"
+    - "&7• &4Access to military equipment"
+    - "&7• &4Battlefield coordination"
+    - ""
+    - "&a✓ &7Multiple slots available"
+    - "&8Serve your nation with honor"
+
+builder_claim:
+  material: GOLDEN_PICKAXE
+  custom_model_data: 3004
+  display_name: "&e&lBuilder Badge"
+  role: "Builder"
+  lore:
+    - "&7Right-click to claim a &eBuilder &7role"
+    - "&7in your nation during the claim window"
+    - ""
+    - "&fRole Benefits:"
+    - "&7• &eConstruction efficiency bonuses"
+    - "&7• &eAccess to advanced building materials"
+    - "&7• &eNation development privileges"
+    - ""
+    - "&a✓ &7Multiple slots available"
+    - "&8Build the future of your nation"
+
+healer_claim:
+  material: SPLASH_POTION
+  custom_model_data: 3005
+  display_name: "&a&lHealer Badge"
+  role: "Healer"
+  lore:
+    - "&7Right-click to claim a &aHealer &7role"
+    - "&7in your nation during the claim window"
+    - ""
+    - "&fRole Benefits:"
+    - "&7• &aEnhanced healing abilities"
+    - "&7• &aAccess to medical supplies"
+    - "&7• &aNation health coordination"
+    - ""
+    - "&a✓ &7Multiple slots available"
+    - "&8Save lives, serve your people"
+
+trader_claim:
+  material: EMERALD
+  custom_model_data: 3006
+  display_name: "&b&lTrader Badge"
+  role: "Trader"
+  lore:
+    - "&7Right-click to claim a &bTrader &7role"
+    - "&7in your nation during the claim window"
+    - ""
+    - "&fRole Benefits:"
+    - "&7• &bEconomic bonuses and privileges"
+    - "&7• &bAccess to trade networks"
+    - "&7• &bNation resource management"
+    - ""
+    - "&a✓ &7Multiple slots available"
+    - "&8Drive your nation's economy"
+
+# Recipe definitions for role claim items (optional - could be admin-only items)
+# Uncomment and modify if you want craftable role claim items
+# 
+# recipes:
+#   president_claim:
+#     shape:
+#       - "GGG"
+#       - "GSG"
+#       - " S "
+#     ingredients:
+#       G: GOLD_BLOCK
+#       S: STICK
+#   
+#   armychief_claim:
+#     shape:
+#       - "III"
+#       - "ISI"
+#       - " S "
+#     ingredients:
+#       I: IRON_BLOCK
+#       S: STICK

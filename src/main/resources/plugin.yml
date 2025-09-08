@@ -2,11 +2,12 @@ name: Doomsday
 version: 1.0.0
 main: gg.doomsday.core.DoomsdayCore
 api-version: 1.20
+softdepend: [LuckPerms]
 
 commands:
   rocket:
     description: Launch missiles and manage rocket systems (Staff Only)
-    usage: /rocket <missile_type> | /rocket reload | /rocket options | /rocket powder [amount] | /rocket helmet [amount] | /rocket items
+    usage: /rocket <missile_type> | /rocket reload | /rocket options | /rocket powder [amount] | /rocket helmet [amount] | /rocket fuel [amount] | /rocket items
     permission: rocket.use
   antiair:
     description: Manage anti-aircraft defense systems (Staff Only)
@@ -17,7 +18,7 @@ commands:
     description: Comprehensive nations system with GUI (Players)
     usage: /nations | /nations leave | /nations info [nation] | /nations teleport [nation] | /nations missiles [nation] | /nations disasters [nation] | /nations items
     permission: rocket.use
-    aliases: [nation, n]
+    aliases: [nation]
   seasons:
     description: Manage game seasons (Staff Only)
     usage: /seasons current | /seasons create <id> | /seasons activate | /seasons archive
@@ -31,13 +32,18 @@ commands:
     description: Send colored chat messages using & color codes
     usage: /cc <message>
     permission: colorchat.use
-  rr:
-    description: Quick server reload command
-    usage: /rr
-    permission: rocket.reload
-  r:
-    description: Legacy command - redirects to new command structure
-    usage: Use /rocket, /antiair, or /nations instead
+  n:
+    description: Send messages to your nation members only
+    usage: /n <message>
+    permission: rocket.use
+  dd:
+    description: Master Doomsday command for system management and help
+    usage: /dd help | /dd reload [config|blocks|items|messages|antiair|disasters] | /dd blocks <place|remove|reload> | /dd kill-entities
+    permission: rocket.use
+    aliases: [doomsday]
+  ai:
+    description: Chat with AI assistant
+    usage: /ai <message> | /ai stats | /ai clear | /ai reload
     permission: rocket.use
 
 permissions:
@@ -50,6 +56,12 @@ permissions:
   rocket.powder:
     description: Allows getting reinforcement powder
     default: op
+  rocket.helmet:
+    description: Allows getting detector helmets
+    default: op
+  rocket.fuel:
+    description: Allows getting rocket fuel
+    default: op
   rocket.antiair:
     description: Allows managing anti-air defense systems
     default: op
@@ -61,4 +73,10 @@ permissions:
     default: op
   rocket.disaster:
     description: Allows managing natural disasters (trigger, stop, reload)
+    default: op
+  ai.reload:
+    description: Allows reloading AI configuration
+    default: op
+  ai.public:
+    description: Allows using @ai mentions in public chat
     default: op

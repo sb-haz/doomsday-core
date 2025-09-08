@@ -9,6 +9,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.BlockDisplay;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -28,18 +29,33 @@ import gg.doomsday.core.items.ReinforcementHandler;
 import gg.doomsday.core.items.ReinforcementDetectorManager;
 import gg.doomsday.core.nations.NationManager;
 import gg.doomsday.core.nations.NationPlayerManager;
+import gg.doomsday.core.nations.NationRoleManager;
+import gg.doomsday.core.nations.RoleAssignmentScheduler;
+import gg.doomsday.core.nations.RoleClaimItemManager;
 import gg.doomsday.core.gui.NationGUI;
+import gg.doomsday.core.listeners.RoleClaimListener;
 import gg.doomsday.core.seasons.SeasonManager;
+import gg.doomsday.core.seasons.SeasonEventListener;
 import gg.doomsday.core.commands.SeasonCommand;
 import gg.doomsday.core.commands.DisasterCommand;
 import gg.doomsday.core.commands.RocketCommand;
 import gg.doomsday.core.commands.AntiairCommand;
 import gg.doomsday.core.commands.NationsCommand;
+import gg.doomsday.core.commands.DoomsdayCommand;
+import gg.doomsday.core.commands.AICommand;
+import gg.doomsday.core.commands.NationChatCommand;
 import gg.doomsday.core.listeners.PlayerJoinListener;
+import gg.doomsday.core.listeners.AIPlayerListener;
+import gg.doomsday.core.listeners.AIChatListener;
+import gg.doomsday.core.listeners.CustomChatListener;
+import gg.doomsday.core.ai.AIService;
+import gg.doomsday.core.ai.PlayerStatsManager;
 import gg.doomsday.core.scoreboard.GameScoreboard;
 import gg.doomsday.core.messaging.MessagingManager;
 import gg.doomsday.core.gui.utils.ItemBuilder;
+import gg.doomsday.core.fuel.MissileFuelManager;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -55,17 +71,24 @@ public final class DoomsdayCore extends JavaPlugin implements TabCompleter {
     private AntiAirDefenseManager antiAirManager;
     private ReinforcementDetectorManager detectorManager;
     private gg.doomsday.core.utils.ColorChatHandler colorChatHandler;
-    private gg.doomsday.core.utils.ReloadCommandHandler reloadCommandHandler;
     private MessageManager messageManager;
     private MissileService missileService;
     private GUIManager guiManager;
     private BlockManager blockManager;
     private NationManager nationManager;
     private NationPlayerManager nationPlayerManager;
+    private NationRoleManager roleManager;
+    private RoleAssignmentScheduler roleScheduler;
+    private RoleClaimItemManager roleItemManager;
+    private SeasonEventListener seasonEventListener;
     private NationGUI nationGUI;
     private SeasonManager seasonManager;
     private GameScoreboard gameScoreboard;
     private MessagingManager messagingManager;
+    private MissileFuelManager fuelManager;
+    private AIService aiService;
+    private PlayerStatsManager playerStatsManager;
+    private CustomChatListener customChatListener;
 
     @Override
     public void onEnable() {
@@ -101,7 +124,6 @@ public final class DoomsdayCore extends JavaPlugin implements TabCompleter {
             // Initialize utility handlers
             getLogger().info("Loading utility handlers...");
             colorChatHandler = new gg.doomsday.core.utils.ColorChatHandler(this);
-            reloadCommandHandler = new gg.doomsday.core.utils.ReloadCommandHandler(this);
             
             // Initialize missile service (centralized missile operations)
             getLogger().info("Loading missile service...");
@@ -121,12 +143,36 @@ public final class DoomsdayCore extends JavaPlugin implements TabCompleter {
             // Initialize messaging manager
             getLogger().info("Loading messaging manager...");
             messagingManager = new MessagingManager(this, nationPlayerManager);
+            
+            // Initialize fuel manager
+            getLogger().info("Loading missile fuel manager...");
+            fuelManager = new MissileFuelManager(this);
+            
+            // Initialize AI service and player stats manager
+            getLogger().info("Loading AI service...");
+            playerStatsManager = new PlayerStatsManager(this);
+            File aiConfigFile = new File(getDataFolder(), "ai_config.yml");
+            if (!aiConfigFile.exists()) {
+                saveResource("ai_config.yml", false);
+            }
+            YamlConfiguration aiConfig = YamlConfiguration.loadConfiguration(aiConfigFile);
+            aiService = new AIService(this, aiConfig, playerStatsManager);
         
-        // Initialize nation GUI
-        nationGUI = new NationGUI(this, nationManager, nationPlayerManager);
+        // Initialize role management system
+        getLogger().info("Loading role management system...");
+        roleManager = new NationRoleManager(this, nationPlayerManager, seasonManager);
+        roleScheduler = new RoleAssignmentScheduler(this, roleManager);
+        roleItemManager = new RoleClaimItemManager(this);
+        
+        // Initialize nation GUI with role manager
+        nationGUI = new NationGUI(this, nationManager, nationPlayerManager, roleManager);
         
         // Initialize season system
         seasonManager = new SeasonManager(this);
+        
+        // Initialize season event listener for role integration
+        seasonEventListener = new SeasonEventListener(this, roleManager, roleScheduler, seasonManager);
+        seasonManager.setEventListener(seasonEventListener);
         
         // Validate active season - disable plugin if invalid
         try {
@@ -142,7 +188,7 @@ public final class DoomsdayCore extends JavaPlugin implements TabCompleter {
         guiManager = new GUIManager(this, reinforcementHandler, detectorManager, antiAirManager, missileService, nationManager);
         
         // Initialize block manager
-        blockManager = new BlockManager(this, antiAirManager, guiManager);
+        blockManager = new BlockManager(this, antiAirManager, guiManager, configManager);
         
         // Place missile and anti-air blocks on startup
         Bukkit.getScheduler().runTaskLater(this, () -> {
@@ -163,6 +209,11 @@ public final class DoomsdayCore extends JavaPlugin implements TabCompleter {
         getServer().getPluginManager().registerEvents(explosionHandler, this);
         getServer().getPluginManager().registerEvents(reinforcementHandler, this);
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(seasonManager, gameScoreboard), this);
+        getServer().getPluginManager().registerEvents(new AIPlayerListener(this, playerStatsManager, aiService), this);
+        getServer().getPluginManager().registerEvents(new AIChatListener(this, aiService), this);
+        customChatListener = new CustomChatListener(this, nationPlayerManager, nationManager);
+        getServer().getPluginManager().registerEvents(customChatListener, this);
+        getServer().getPluginManager().registerEvents(new RoleClaimListener(this, roleManager, nationPlayerManager, roleItemManager), this);
         
         // Register new command structure
         RocketCommand rocketCommand = new RocketCommand(this, missileService, messageManager, reinforcedBlockManager, reinforcementHandler, detectorManager);
@@ -185,11 +236,25 @@ public final class DoomsdayCore extends JavaPlugin implements TabCompleter {
         getCommand("disaster").setExecutor(disasterCommand);
         getCommand("disaster").setTabCompleter(disasterCommand);
         
+        // Master doomsday command with role manager
+        DoomsdayCommand doomsdayCommand = new DoomsdayCommand(this, messageManager, blockManager);
+        doomsdayCommand.setRoleManager(roleManager);
+        getCommand("dd").setExecutor(doomsdayCommand);
+        getCommand("dd").setTabCompleter(doomsdayCommand);
+        
+        // AI command
+        AICommand aiCommand = new AICommand(this, aiService);
+        getCommand("ai").setExecutor(aiCommand);
+        getCommand("ai").setTabCompleter(aiCommand);
+        
+        // Nation chat command
+        NationChatCommand nationChatCommand = new NationChatCommand(this, nationPlayerManager, nationManager);
+        getCommand("n").setExecutor(nationChatCommand);
+        getCommand("n").setTabCompleter(nationChatCommand);
+        
         // Utility commands
         getCommand("cc").setExecutor(colorChatHandler);
         getCommand("cc").setTabCompleter(colorChatHandler);
-        getCommand("rr").setExecutor(reloadCommandHandler);
-        getCommand("rr").setTabCompleter(reloadCommandHandler);
         
         // Start periodic cleanup task for reinforced blocks (every 5 minutes)
         new BukkitRunnable() {
@@ -205,6 +270,7 @@ public final class DoomsdayCore extends JavaPlugin implements TabCompleter {
             getLogger().info("Reinforced blocks system initialized with " + reinforcedBlockManager.getReinforcedBlockCount() + " blocks");
             getLogger().info("Anti-air defense system initialized with " + antiAirManager.getDefenses().size() + " defense installations");
             getLogger().info("Nation system initialized with " + nationManager.getAllNations().size() + " nations and natural disasters");
+            getLogger().info("Role management system initialized with season integration");
             
         } catch (Exception e) {
             getLogger().severe("Failed to initialize DoomsdayCore plugin: " + e.getMessage());
@@ -241,11 +307,41 @@ public final class DoomsdayCore extends JavaPlugin implements TabCompleter {
         return nationPlayerManager;
     }
     
+    public ReinforcedBlockManager getReinforcedBlockManager() {
+        return reinforcedBlockManager;
+    }
+    
+    public ReinforcementHandler getReinforcementHandler() {
+        return reinforcementHandler;
+    }
+    
+    public AntiAirDefenseManager getAntiAirManager() {
+        return antiAirManager;
+    }
+    
+    public MissileFuelManager getFuelManager() {
+        return fuelManager;
+    }
+    
+    public CustomChatListener getCustomChatListener() {
+        return customChatListener;
+    }
+    
     @Override
     public void onDisable() {
         // Save reinforced blocks data
         if (reinforcedBlockManager != null) {
             reinforcedBlockManager.saveReinforcedBlocks();
+        }
+        
+        // Save missile fuel data
+        if (fuelManager != null) {
+            fuelManager.saveFuelData();
+        }
+        
+        // Shutdown AI service
+        if (aiService != null) {
+            aiService.shutdown();
         }
         
         // Shutdown detector manager
@@ -256,6 +352,11 @@ public final class DoomsdayCore extends JavaPlugin implements TabCompleter {
         // Shutdown nation player manager
         if (nationPlayerManager != null) {
             nationPlayerManager.saveConfiguration();
+        }
+        
+        // Shutdown role management system
+        if (roleScheduler != null) {
+            roleScheduler.stopPeriodicCheck();
         }
         
         // Shutdown nation manager
@@ -276,44 +377,5 @@ public final class DoomsdayCore extends JavaPlugin implements TabCompleter {
         getLogger().info("Rocket plugin disabled!");
     }
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        // Legacy support for old /r commands - redirect to new command structure
-        if (command.getName().equalsIgnoreCase("r")) {
-            return handleLegacyRocketCommand(sender, args);
-        }
-        
-        return false;
-    }
-    
-    private boolean handleLegacyRocketCommand(CommandSender sender, String[] args) {
-        sender.sendMessage(messageManager.getMessage("commands.legacy.redirect_header"));
-        sender.sendMessage(messageManager.getMessage("commands.legacy.redirect_message"));
-        sender.sendMessage("");
-        sender.sendMessage(messageManager.getMessage("commands.legacy.new_structure_header"));
-        sender.sendMessage(messageManager.getMessage("commands.legacy.rocket_desc"));
-        sender.sendMessage(messageManager.getMessage("commands.legacy.antiair_desc"));
-        sender.sendMessage(messageManager.getMessage("commands.legacy.nations_desc"));
-        sender.sendMessage(messageManager.getMessage("commands.legacy.seasons_desc"));
-        sender.sendMessage(messageManager.getMessage("commands.legacy.disaster_desc"));
-        sender.sendMessage("");
-        sender.sendMessage(messageManager.getMessage("commands.legacy.player_hint"));
-        sender.sendMessage(messageManager.getMessage("commands.legacy.staff_hint"));
-        return true;
-    }
-
-
-
-    @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        // Legacy support for /r command - show help
-        if (command.getName().equalsIgnoreCase("r")) {
-            List<String> completions = new ArrayList<>();
-            completions.add("Use /rocket, /antiair, or /nations instead");
-            return completions;
-        }
-        
-        return new ArrayList<>();
-    }
 
 }

@@ -10,7 +10,7 @@ antiair:
       displayName: "Patriot Battery (USA - Core)"
       location:
         x: -192
-        y: 80
+        y: 102
         z: 0
       range: 160
       accuracy: 0.95
@@ -23,7 +23,7 @@ antiair:
       displayName: "Aegis System (USA - North)"
       location:
         x: -220
-        y: 80
+        y: 102
         z: 40
       range: 180
       accuracy: 0.92
@@ -36,7 +36,7 @@ antiair:
       displayName: "Aegis System (USA - South)"
       location:
         x: -220
-        y: 80
+        y: 102
         z: -40
       range: 180
       accuracy: 0.92
@@ -49,7 +49,7 @@ antiair:
       displayName: "Core Defense (USA)"
       location:
         x: -240
-        y: 80
+        y: 102
         z: 0
       range: 120
       accuracy: 0.90
@@ -63,7 +63,7 @@ antiair:
       displayName: "HQ-9 SAM (Asia - Border)"
       location:
         x: 192
-        y: 80
+        y: 102
         z: 0
       range: 140
       accuracy: 0.90
@@ -76,7 +76,7 @@ antiair:
       displayName: "S-400 Triumph (Asia - Core)"
       location:
         x: 220
-        y: 80
+        y: 102
         z: 36
       range: 150
       accuracy: 0.88
@@ -89,7 +89,7 @@ antiair:
       displayName: "S-400 Triumph (Asia - Support)"
       location:
         x: 220
-        y: 80
+        y: 102
         z: -36
       range: 150
       accuracy: 0.88
@@ -103,7 +103,7 @@ antiair:
       displayName: "WW2 Flak Battery (Antarctica)"
       location:
         x: 0
-        y: 80
+        y: 102
         z: 192
       range: 50
       accuracy: 0.65
@@ -116,7 +116,7 @@ antiair:
       displayName: "IRIS-T SLM (Antarctica - Support)"
       location:
         x: -32
-        y: 80
+        y: 102
         z: 160
       range: 100
       accuracy: 0.80
@@ -130,7 +130,7 @@ antiair:
       displayName: "Kub System (Africa - Core)"
       location:
         x: 0
-        y: 80
+        y: 102
         z: 0
       range: 80
       accuracy: 0.75
@@ -143,7 +143,7 @@ antiair:
       displayName: "ZSU-23 Shilka (Africa - Support)"
       location:
         x: -40
-        y: 80
+        y: 102
         z: 20
       range: 60
       accuracy: 0.70
@@ -157,7 +157,7 @@ antiair:
       displayName: "S-300 Battery (Europe - Core)"
       location:
         x: 0
-        y: 80
+        y: 102
         z: -192
       range: 120
       accuracy: 0.85
@@ -170,7 +170,7 @@ antiair:
       displayName: "IRIS-T SLM (Europe - Support)"
       location:
         x: 20
-        y: 80
+        y: 102
         z: -160
       range: 100
       accuracy: 0.80

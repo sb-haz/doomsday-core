@@ -18,6 +18,7 @@ import gg.doomsday.core.GUIManager;
 import gg.doomsday.core.defense.AntiAirDefense;
 import gg.doomsday.core.defense.AntiAirDefenseManager;
 import gg.doomsday.core.gui.utils.ItemBuilder;
+import gg.doomsday.core.config.ConfigManager;
 
 import java.util.HashMap;
 import java.util.List;
@@ -31,13 +32,15 @@ public class BlockManager implements Listener {
     private final JavaPlugin plugin;
     private final AntiAirDefenseManager antiAirManager;
     private final GUIManager guiManager;
+    private final ConfigManager configManager;
     private final Map<Location, String> missileBlocks = new HashMap<>();
     private final Map<Location, String> antiAirBlocks = new HashMap<>();
     
-    public BlockManager(JavaPlugin plugin, AntiAirDefenseManager antiAirManager, GUIManager guiManager) {
+    public BlockManager(JavaPlugin plugin, AntiAirDefenseManager antiAirManager, GUIManager guiManager, ConfigManager configManager) {
         this.plugin = plugin;
         this.antiAirManager = antiAirManager;
         this.guiManager = guiManager;
+        this.configManager = configManager;
         
         // Register event listener
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -52,8 +55,12 @@ public class BlockManager implements Listener {
     private void placeMissileBlocks(World world) {
         missileBlocks.clear();
         
-        ConfigurationSection rocketsSection = plugin.getConfig().getConfigurationSection("rockets");
-        if (rocketsSection == null) return;
+        // Get rockets configuration from rockets.yml
+        ConfigurationSection rocketsSection = configManager.getConfig(ConfigManager.ROCKETS_CONFIG).getConfigurationSection("rockets");
+        if (rocketsSection == null) {
+            plugin.getLogger().warning("No rockets section found in rockets.yml!");
+            return;
+        }
         
         for (String rocketKey : rocketsSection.getKeys(false)) {
             ConfigurationSection rocket = rocketsSection.getConfigurationSection(rocketKey);

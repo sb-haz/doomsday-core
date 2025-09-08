@@ -6,7 +6,7 @@
 
 # Missile launch warnings
 missile:
-  launch: "&c[MISSILE] &fA {missileType} has been launched by {nationColor}{nation}&f!"
+  launch: "&c[MISSILE] &fA {missileType} has been launched by {launchNationColor}{launchNation}&f towards {targetNationColor}{targetNation}&f!"
 
 # Anti-air defense messages
 antiair:

@@ -15,6 +15,7 @@ import gg.doomsday.core.messaging.MessagingManager;
 import gg.doomsday.core.nations.Nation;
 import gg.doomsday.core.nations.NationManager;
 import gg.doomsday.core.utils.NationColors;
+import gg.doomsday.core.fuel.MissileFuelManager;
 import gg.doomsday.core.DoomsdayCore;
 
 /**
@@ -94,6 +95,27 @@ public class MissileService {
     private boolean executeMissileLaunch(Player player, String rocketKey, ConfigurationSection rocket) {
         World world = player.getWorld();
         
+        // Check fuel requirements
+        DoomsdayCore doomsdayCore = (DoomsdayCore) plugin;
+        MissileFuelManager fuelManager = doomsdayCore.getFuelManager();
+        
+        int fuelRequired = rocket.getInt("fuelRequired", 0);
+        if (fuelRequired > 0) {
+            if (!fuelManager.hasSufficientFuel(rocketKey, fuelRequired)) {
+                int currentFuel = fuelManager.getFuel(rocketKey);
+                int needed = fuelRequired - currentFuel;
+                player.sendMessage("§c❌ Insufficient fuel! Need " + needed + " more rocket fuel.");
+                player.sendMessage("§7Current fuel: §6" + currentFuel + " §7Required: §e" + fuelRequired);
+                return false;
+            }
+            
+            // Consume fuel
+            if (!fuelManager.consumeFuel(rocketKey, fuelRequired)) {
+                player.sendMessage("§c❌ Failed to consume fuel! Launch aborted.");
+                return false;
+            }
+        }
+        
         // Extract configuration
         double x1 = rocket.getDouble("start.x");
         double y1 = rocket.getDouble("start.y");
@@ -120,17 +142,30 @@ public class MissileService {
         plugin.getLogger().info("Start: " + (int)x1 + "," + (int)y1 + "," + (int)z1);
         plugin.getLogger().info("Target: " + (int)x2 + "," + (int)y2 + "," + (int)z2);
         plugin.getLogger().info("Type: " + explosionTypeStr);
+        plugin.getLogger().info("Fuel consumed: " + fuelRequired);
         
         // Launch the rocket
         rocketLauncher.spawnRocket(start, end, smokeOffset, speed, arcScale, soundStr, explosionTypeStr);
         
         // Send notifications to all players
-        String nationId = getNationIdFromRocketKey(rocketKey);
-        broadcastMissileLaunch(world, nationId, displayName, start);
+        String launchingNationId = getNationIdFromRocketKey(rocketKey);
+        broadcastMissileLaunch(world, launchingNationId, displayName, start, end);
         
         // Send confirmation to launching player
         player.sendMessage("§a§l🚀 " + displayName + " LAUNCHED!");
-        player.sendMessage("§fTarget: " + (int)x2 + ", " + (int)y2 + ", " + (int)z2);
+        if (fuelRequired > 0) {
+            int remainingFuel = fuelManager.getFuel(rocketKey);
+            player.sendMessage("§7Fuel consumed: §6" + fuelRequired + " §7Remaining: §e" + remainingFuel);
+        }
+        
+        // Show target info including nation
+        Nation targetNation = doomsdayCore.getNationManager().getNationAt(end);
+        if (targetNation != null) {
+            String coloredTargetName = org.bukkit.ChatColor.translateAlternateColorCodes('&', NationColors.getColoredNationName(targetNation.getId()));
+            player.sendMessage("§fTarget: " + coloredTargetName + " §f(" + (int)x2 + ", " + (int)y2 + ", " + (int)z2 + ")");
+        } else {
+            player.sendMessage("§fTarget: §7Unknown Territory §f(" + (int)x2 + ", " + (int)y2 + ", " + (int)z2 + ")");
+        }
         
         return true;
     }
@@ -138,18 +173,36 @@ public class MissileService {
     /**
      * Broadcast missile launch warning using the configurable messaging system
      */
-    private void broadcastMissileLaunch(World world, String nationId, String missileDisplayName, Location launchLocation) {
-        String coloredNationName = NationColors.getColoredNationName(nationId);
-        String nationColor = NationColors.getNationColor(nationId);
+    private void broadcastMissileLaunch(World world, String launchingNationId, String missileDisplayName, Location launchLocation, Location targetLocation) {
+        // Get launching nation info
+        String launchColoredName = NationColors.getColoredNationName(launchingNationId);
+        String launchNationColor = NationColors.getNationColor(launchingNationId);
+        String launchNationName = launchColoredName.replaceAll("§[0-9a-fk-or]", "");
+        
+        // Determine target nation
+        DoomsdayCore doomsdayCore = (DoomsdayCore) plugin;
+        Nation targetNation = doomsdayCore.getNationManager().getNationAt(targetLocation);
+        
+        String targetNationName;
+        String targetNationColor;
+        
+        if (targetNation != null) {
+            targetNationName = targetNation.getDisplayName();
+            targetNationColor = NationColors.getNationColor(targetNation.getId());
+        } else {
+            // Target is not in any nation territory
+            targetNationName = "Unknown Territory";
+            targetNationColor = "&7"; // Gray for unknown
+        }
+        
         String launchMsg = messageManager.getMessage("missile.launch", 
-                new String[]{"missileType", "nation", "nationColor"}, 
-                new String[]{missileDisplayName, coloredNationName.replaceAll("§[0-9a-fk-or]", ""), nationColor});
+                new String[]{"missileType", "launchNation", "launchNationColor", "targetNation", "targetNationColor"}, 
+                new String[]{missileDisplayName, launchNationName, launchNationColor, targetNationName, targetNationColor});
         
         // Get the launching nation object
-        Nation launchingNation = getLaunchingNationFromName(nationId);
+        Nation launchingNation = getLaunchingNationFromName(launchingNationId);
         
         // Use the new MessagingManager for configurable messaging
-        DoomsdayCore doomsdayCore = (DoomsdayCore) plugin;
         MessagingManager messagingManager = doomsdayCore.getMessagingManager();
         messagingManager.sendMissileMessage(launchMsg, launchLocation, launchingNation);
         

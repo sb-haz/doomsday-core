@@ -1,0 +1,10 @@
+# API Keys Configuration
+# This file contains sensitive API keys and should not be committed to version control
+# Add this file to .gitignore for security
+
+# DeepSeek AI API Key
+# Get your API key from: https://platform.deepseek.com/
+AI_API_KEY: "CHANGE_ME_TO_YOUR_DEEPSEEK_API_KEY"
+
+# Future API keys can be added here
+# EXAMPLE_API_KEY: "your_api_key_here"

@@ -1,0 +1,91 @@
+# Nation Roles Configuration
+# Defines role slots and claim window settings for each nation
+
+settings:
+  claim-window-minutes: 60  # Duration after season start where custom items work
+  weighted-assignment: true  # Use weighted random assignment for unfilled roles
+  
+# Donor rank weights for random assignment (higher = better chance)
+donor-weights:
+  vip: 2.0
+  mvp: 3.0
+  mvp+: 4.0
+  legend: 5.0
+
+nations:
+  america:
+    President: 1
+    ArmyChief: 1
+    Soldier: 3
+    Builder: 2
+    Healer: 1
+    Trader: 1
+  
+  europe:
+    President: 1
+    ArmyChief: 1
+    Soldier: 2
+    Builder: 3
+    Healer: 1
+    Trader: 1
+    
+  africa:
+    President: 1
+    ArmyChief: 1
+    Soldier: 4
+    Builder: 1
+    Healer: 2
+    Trader: 1
+    
+  asia:
+    President: 1
+    ArmyChief: 1
+    Soldier: 3
+    Builder: 2
+    Healer: 1
+    Trader: 2
+    
+  antarctica:
+    President: 1
+    ArmyChief: 1
+    Soldier: 2
+    Builder: 3
+    Healer: 0
+    Trader: 1
+
+# Role descriptions and permissions (for future expansion)
+role-info:
+  President:
+    description: "Leader of the nation with full authority"
+    color: "&8"  # Dark Gray (configurable for chat display)
+    priority: 1
+  
+  ArmyChief:
+    description: "Military commander of the nation"
+    color: "&8"  # Dark Gray (configurable for chat display)
+    priority: 2
+    
+  Soldier:
+    description: "Military personnel protecting the nation"
+    color: "&8"  # Dark Gray (configurable for chat display)
+    priority: 3
+    
+  Builder:
+    description: "Construction specialist for nation development"
+    color: "&8"  # Dark Gray (configurable for chat display)
+    priority: 4
+    
+  Healer:
+    description: "Medical support for nation members"
+    color: "&8"  # Dark Gray (configurable for chat display)
+    priority: 5
+    
+  Trader:
+    description: "Economic specialist managing resources"
+    color: "&8"  # Dark Gray (configurable for chat display)
+    priority: 6
+    
+  Citizen:
+    description: "Default role for nation members"
+    color: "&8"  # Dark Gray (configurable for chat display)
+    priority: 7

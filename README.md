@@ -84,26 +84,26 @@ A comprehensive Minecraft plugin that adds realistic rocket warfare, defensive s
 ## Commands
 
 ### Main Commands
-- `/rocket <missile_name>` or `/r <missile_name>` - Launch a missile
+- `/rocket <missile_name>` - Launch a missile
   - Available missiles: `r1`, `r2`, `r3`, `r4`, `r5`
-- `/r reload` or `/r r` - Reload all configurations
-- `/r options` or `/r o` - View current configuration
-- `/r c` - Create testing environment with markers
+- `/rocket reload` - Reload rocket configurations
+- `/rocket options` - View current configuration
+- `/dd reload` - Reload all configurations and place world markers
 
 ### Item Commands
-- `/r powder [amount]` or `/r p [amount]` - Get reinforcement powder (1-64)
-- `/r helmet [amount]` or `/r h [amount]` - Get detector helmet (1-64)
-- `/r items` or `/r i` - Reload custom items configuration
+- `/rocket powder [amount]` - Get reinforcement powder (1-64)
+- `/rocket helmet [amount]` - Get detector helmet (1-64)
+- `/rocket items` - Reload custom items configuration
 
 ### Anti-Air Commands
-- `/r aa status` - View all defense system status
-- `/r aa reload` - Reload all anti-air defenses
-- `/r aa online <defense_name>` - Bring defense system online
-- `/r aa offline <defense_name>` - Take defense system offline
+- `/antiair status` - View all defense system status
+- `/antiair reload` - Reload all anti-air defenses
+- `/antiair online <defense_name>` - Bring defense system online
+- `/antiair offline <defense_name>` - Take defense system offline
 
 ### Nations Commands
-- `/r nation` or `/r n` - Check your current location and nation information
-- `/r show` - Open interactive GUI (includes nations overview)
+- `/nations` - Check your current location and nation information
+- `/nations gui` - Open interactive GUI (includes nations overview)
 
 ### Seasons Commands
 - `/season current` or `/s current` - View current season information and status
@@ -111,7 +111,8 @@ A comprehensive Minecraft plugin that adds realistic rocket warfare, defensive s
 - `/season activate` - Activate planned season to make it live (admin only)
 - `/season archive` - Archive current season when finished (admin only)
 
-### Utility Commands
+### Help & Utility Commands
+- `/dd help` - Show all available plugin commands with descriptions
 - `/cc [message]` - Send colored chat message (use & for color codes)
 - `/rr` - Quick plugin reload (requires permission)
 
@@ -281,7 +282,7 @@ global:
 ```
 
 ### Interactive GUI Features
-- **Nations Overview**: Click the "Nations & Disasters" button in `/r show`
+- **Nations Overview**: Click the "Nations & Disasters" button in `/nations gui`
 - **Current Location**: See your exact coordinates and current nation
 - **Active Disasters**: Real-time display of ongoing disasters with countdowns
 - **Nation Teleportation**: Click any nation to teleport to its center

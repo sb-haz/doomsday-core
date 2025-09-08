@@ -17,6 +17,9 @@ import gg.doomsday.core.nations.Disaster;
 import gg.doomsday.core.nations.Nation;
 import gg.doomsday.core.nations.NationManager;
 import gg.doomsday.core.nations.NationPlayerManager;
+import gg.doomsday.core.nations.NationRole;
+import gg.doomsday.core.nations.NationRoleManager;
+import gg.doomsday.core.nations.NationRoleAssignment;
 import gg.doomsday.core.utils.NationColors;
 
 import java.util.ArrayList;
@@ -31,14 +34,16 @@ public class NationGUI implements Listener {
     private final JavaPlugin plugin;
     private final NationManager nationManager;
     private final NationPlayerManager playerManager;
+    private final NationRoleManager roleManager;
     
     // Navigation stack - stores the full navigation history for each player
     private final Map<UUID, Stack<String>> navigationStack = new ConcurrentHashMap<>();
     
-    public NationGUI(JavaPlugin plugin, NationManager nationManager, NationPlayerManager playerManager) {
+    public NationGUI(JavaPlugin plugin, NationManager nationManager, NationPlayerManager playerManager, NationRoleManager roleManager) {
         this.plugin = plugin;
         this.nationManager = nationManager;
         this.playerManager = playerManager;
+        this.roleManager = roleManager;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
     
@@ -118,6 +123,12 @@ public class NationGUI implements Listener {
             String nationId = getNationIdFromDisplayName(nationName);
             if (nationId != null) {
                 openDisastersGUIWithoutPush(player, nationId);
+            }
+        } else if (previousGUITitle.endsWith(" Roles")) {
+            String nationName = previousGUITitle.replace(" Roles", "");
+            String nationId = getNationIdFromDisplayName(nationName);
+            if (nationId != null) {
+                openRolesGUIWithoutPush(player, nationId);
             }
         } else if (previousGUITitle.equals("All Missile Types")) {
             openAllMissilesGUIWithoutPush(player);
@@ -354,8 +365,20 @@ public class NationGUI implements Listener {
         
         int onlineCount = playerManager.getOnlinePlayerCountInNation(nation.getId());
         lore.add("&7Population: &f" + nation.getTotalPlayers());
+        lore.add("&7Online: &f" + onlineCount);
         lore.add("&7Region: &f" + getLocationDescription(nation.getId()));
         lore.add("");
+        
+        // Add role summary
+        if (roleManager != null) {
+            Map<NationRole, List<NationRoleAssignment>> roles = roleManager.getAllRoleAssignments(nation.getId());
+            if (!roles.isEmpty()) {
+                lore.add("&6Leadership:");
+                addRoleSummaryToLore(lore, roles, NationRole.PRESIDENT);
+                addRoleSummaryToLore(lore, roles, NationRole.ARMYCHIEF);
+                lore.add("");
+            }
+        }
         
         // Add missile count
         int missileCount = nation.getMissileTypes() != null ? nation.getMissileTypes().size() : 0;
@@ -445,6 +468,53 @@ public class NationGUI implements Listener {
                 .setDisplayName("&4&lNatural Disasters")
                 .setLore("&7Click to view disaster info")
                 .build());
+        
+        // Roles section (new)
+        gui.setItem(30, new ItemBuilder(Material.PLAYER_HEAD)
+                .setDisplayName("&5&lNation Roles")
+                .setLore("&7Click to view role assignments")
+                .build());
+        
+        // Quick role overview in details page
+        if (roleManager != null) {
+            Map<NationRole, List<NationRoleAssignment>> roles = roleManager.getAllRoleAssignments(nation.getId());
+            
+            // President info
+            List<NationRoleAssignment> presidents = roles.get(NationRole.PRESIDENT);
+            if (!presidents.isEmpty()) {
+                NationRoleAssignment president = presidents.get(0);
+                gui.setItem(32, new ItemBuilder(Material.GOLDEN_SWORD)
+                        .setDisplayName("&6&lPresident")
+                        .setLore(
+                            "&7" + president.getPlayerName(),
+                            "&8" + (president.wasClaimed() ? "Claimed role" : "Auto-assigned")
+                        )
+                        .build());
+            } else {
+                gui.setItem(32, new ItemBuilder(Material.BARRIER)
+                        .setDisplayName("&6&lPresident")
+                        .setLore("&cVacant Position")
+                        .build());
+            }
+            
+            // Army Chief info
+            List<NationRoleAssignment> armyChiefs = roles.get(NationRole.ARMYCHIEF);
+            if (!armyChiefs.isEmpty()) {
+                NationRoleAssignment armyChief = armyChiefs.get(0);
+                gui.setItem(34, new ItemBuilder(Material.IRON_SWORD)
+                        .setDisplayName("&c&lArmy Chief")
+                        .setLore(
+                            "&7" + armyChief.getPlayerName(),
+                            "&8" + (armyChief.wasClaimed() ? "Claimed role" : "Auto-assigned")
+                        )
+                        .build());
+            } else {
+                gui.setItem(34, new ItemBuilder(Material.BARRIER)
+                        .setDisplayName("&c&lArmy Chief")
+                        .setLore("&cVacant Position")
+                        .build());
+            }
+        }
         
         
         player.openInventory(gui);
@@ -557,6 +627,10 @@ public class NationGUI implements Listener {
         openDisastersGUI(player, nationId, null);
     }
     
+    private void openRolesGUIWithoutPush(Player player, String nationId) {
+        openRolesGUI(player, nationId, null);
+    }
+    
     private void openAllMissilesGUIWithoutPush(Player player) {
         openAllMissilesGUI(player, null);
     }
@@ -609,6 +683,12 @@ public class NationGUI implements Listener {
         // Handle disasters GUI
         if (title.endsWith(" Disasters")) {
             handleDisastersClick(event, player);
+            return;
+        }
+        
+        // Handle roles GUI
+        if (title.endsWith(" Roles")) {
+            handleRolesClick(event, player);
             return;
         }
         
@@ -689,6 +769,9 @@ public class NationGUI implements Listener {
             case 24: // Disasters
                 openDisastersGUI(player, nationId, title);
                 break;
+            case 30: // Roles
+                openRolesGUI(player, nationId, title);
+                break;
             case 45: // Back button
                 handleBackNavigation(player);
                 break;
@@ -714,6 +797,14 @@ public class NationGUI implements Listener {
     }
     
     private void handleDisastersClick(InventoryClickEvent event, Player player) {
+        event.setCancelled(true);
+        
+        if (event.getSlot() == 45) { // Back button
+            handleBackNavigation(player);
+        }
+    }
+    
+    private void handleRolesClick(InventoryClickEvent event, Player player) {
         event.setCancelled(true);
         
         if (event.getSlot() == 45) { // Back button
@@ -886,7 +977,10 @@ public class NationGUI implements Listener {
         
         switch (event.getSlot()) {
             case 12: // Yes - Join Nation
-                if (playerManager.joinNation(player, targetNation.getId())) {
+                if (!playerManager.canPlayerJoin(player)) {
+                    player.sendMessage(ChatColor.RED + "Player joining is currently disabled!");
+                    player.closeInventory();
+                } else if (playerManager.joinNation(player, targetNation.getId())) {
                     player.sendMessage(ChatColor.GREEN + "✓ Successfully joined " + NationColors.getColoredNationName(targetNation.getId()) + ChatColor.GREEN + "!");
                     player.sendMessage(ChatColor.YELLOW + "Welcome to your new nation!");
                     
@@ -1568,6 +1662,156 @@ public class NationGUI implements Listener {
             case "r5": return "&7Nuclear with massive mushroom cloud";
             default: return "&7Advanced military-grade missile system";
         }
+    }
+    
+    private void addRoleSummaryToLore(List<String> lore, Map<NationRole, List<NationRoleAssignment>> roles, NationRole role) {
+        List<NationRoleAssignment> assignments = roles.get(role);
+        if (assignments != null && !assignments.isEmpty()) {
+            NationRoleAssignment assignment = assignments.get(0);
+            lore.add("&7• " + role.getColoredName() + "&7: &f" + assignment.getPlayerName());
+        } else {
+            lore.add("&7• " + role.getColoredName() + "&7: &8Vacant");
+        }
+    }
+    
+    public void openRolesGUI(Player player, String nationId) {
+        openRolesGUI(player, nationId, null);
+    }
+    
+    public void openRolesGUI(Player player, String nationId, String fromGUI) {
+        if (fromGUI != null) {
+            pushToNavigationStack(player, fromGUI);
+        }
+        
+        Nation nation = nationManager.getAllNations().get(nationId);
+        if (nation == null) {
+            player.sendMessage(ChatColor.RED + "Nation not found!");
+            return;
+        }
+        
+        Inventory gui = Bukkit.createInventory(null, 54, nation.getDisplayName() + " Roles");
+        
+        // Add glass pane border
+        addGlassPaneBorder(gui);
+        
+        // Add back button if there's a previous GUI
+        if (hasBackButton(nation.getDisplayName() + " Roles", player)) {
+            gui.setItem(45, new ItemBuilder(Material.ARROW)
+                    .setDisplayName("&7« Back")
+                    .setLore("&7Return to previous menu")
+                    .build());
+        }
+        
+        // Title item
+        gui.setItem(4, new ItemBuilder(Material.PLAYER_HEAD)
+                .setDisplayName("&5&l" + nation.getDisplayName() + " Role Assignments")
+                .setLore(
+                    "&7Current role holders and assignments",
+                    "&7Season roles are reset each season"
+                )
+                .setSkullOwner("MHF_Question")
+                .build());
+        
+        if (roleManager != null) {
+            Map<NationRole, List<NationRoleAssignment>> roles = roleManager.getAllRoleAssignments(nationId);
+            
+            int slot = 10;
+            
+            // Display each role type
+            for (NationRole role : NationRole.getClaimableRoles()) {
+                if (slot > 43) break; // Don't overflow GUI
+                
+                List<NationRoleAssignment> assignments = roles.get(role);
+                Material material = getRoleMaterial(role);
+                
+                List<String> lore = new ArrayList<>();
+                lore.add("&7Role: " + role.getColoredName());
+                lore.add("");
+                
+                if (assignments != null && !assignments.isEmpty()) {
+                    lore.add("&aAssigned Players:");
+                    for (NationRoleAssignment assignment : assignments) {
+                        String method = assignment.wasClaimed() ? "&2[CLAIMED]" : "&6[ASSIGNED]";
+                        lore.add("&7• &f" + assignment.getPlayerName() + " " + method);
+                    }
+                    
+                    if (assignments.size() < getMaxSlots(nationId, role)) {
+                        int available = getMaxSlots(nationId, role) - assignments.size();
+                        lore.add("");
+                        lore.add("&e" + available + " slot" + (available == 1 ? "" : "s") + " available");
+                    }
+                } else {
+                    int maxSlots = getMaxSlots(nationId, role);
+                    if (maxSlots > 0) {
+                        lore.add("&cNo assignments");
+                        lore.add("&e" + maxSlots + " slot" + (maxSlots == 1 ? "" : "s") + " available");
+                    } else {
+                        lore.add("&8Not available in this nation");
+                    }
+                }
+                
+                gui.setItem(slot, new ItemBuilder(material)
+                        .setDisplayName(role.getColoredName())
+                        .setLore(lore)
+                        .build());
+                
+                slot++;
+                if (slot % 9 == 8) slot += 2; // Skip to next row, avoid edges
+            }
+            
+            // Claim window info
+            if (roleManager.isClaimWindowActive()) {
+                long remaining = roleManager.getClaimWindowRemainingMinutes();
+                gui.setItem(49, new ItemBuilder(Material.CLOCK)
+                        .setDisplayName("&e&lClaim Window Active")
+                        .setLore(
+                            "&7Players can claim roles using items",
+                            "&7Time remaining: &e" + remaining + " minutes",
+                            "",
+                            "&aUse role claim items to secure positions!"
+                        )
+                        .build());
+            } else {
+                gui.setItem(49, new ItemBuilder(Material.BARRIER)
+                        .setDisplayName("&c&lClaim Window Closed")
+                        .setLore(
+                            "&7Role claiming period has ended",
+                            "&7Roles are now assigned automatically",
+                            "",
+                            "&8Wait for next season to claim roles"
+                        )
+                        .build());
+            }
+        }
+        
+        player.openInventory(gui);
+    }
+    
+    private Material getRoleMaterial(NationRole role) {
+        switch (role) {
+            case PRESIDENT:
+                return Material.GOLDEN_SWORD;
+            case ARMYCHIEF:
+                return Material.IRON_SWORD;
+            case SOLDIER:
+                return Material.STONE_SWORD;
+            case BUILDER:
+                return Material.GOLDEN_PICKAXE;
+            case HEALER:
+                return Material.SPLASH_POTION;
+            case TRADER:
+                return Material.EMERALD;
+            default:
+                return Material.PLAYER_HEAD;
+        }
+    }
+    
+    private int getMaxSlots(String nationId, NationRole role) {
+        if (roleManager != null) {
+            return roleManager.getAvailableSlots(nationId, role) + 
+                   roleManager.getRoleAssignments(nationId, role).size();
+        }
+        return 0;
     }
     
     // Helper method to add glass pane borders to 54-slot GUIs

@@ -48,3 +48,24 @@ reinforcement_detector_helmet:
     - "&7• &7Updates every 2 seconds"
     - ""
     - "&8Advanced detection technology"
+
+rocket_fuel:
+  material: BLAZE_POWDER
+  # Custom model data for resource pack support (1-9999)
+  custom_model_data: 2003
+  display_name: "&6Rocket Fuel"
+  lore:
+    - "&7High-energy fuel for missile systems"
+    - ""
+    - "&fUsage:"
+    - "&7• &eRight-click missile to deposit fuel"
+    - "&7• &cCannot be withdrawn once deposited"
+    - "&7• &7Required for missile launches"
+    - ""
+    - "&8Highly volatile - handle with care"
+  recipe:
+    shapeless: true
+    ingredients:
+      - BLAZE_POWDER
+      - GUNPOWDER
+      - REDSTONE

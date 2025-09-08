@@ -21,6 +21,7 @@ public class SeasonManager {
     private Season currentSeason;
     private FileConfiguration seasonsConfig;
     private File seasonsFile;
+    private SeasonEventListener eventListener;
     
     public SeasonManager(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -154,6 +155,11 @@ public class SeasonManager {
         currentSeason.setStatus(Season.Status.ACTIVE);
         saveSeason();
         
+        // Trigger season activation events
+        if (eventListener != null) {
+            eventListener.onSeasonActivated(currentSeason);
+        }
+        
         plugin.getLogger().info("Activated season: " + currentSeason.getId());
         return true;
     }
@@ -167,6 +173,12 @@ public class SeasonManager {
         }
         
         currentSeason.setStatus(Season.Status.ARCHIVED);
+        
+        // Trigger season archival events
+        if (eventListener != null) {
+            eventListener.onSeasonArchived(currentSeason);
+        }
+        
         saveSeason();
         
         plugin.getLogger().info("Archived season: " + currentSeason.getId());
@@ -218,5 +230,9 @@ public class SeasonManager {
     public void reload() {
         loadConfiguration();
         plugin.getLogger().info("Season system reloaded");
+    }
+    
+    public void setEventListener(SeasonEventListener eventListener) {
+        this.eventListener = eventListener;
     }
 }

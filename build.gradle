@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id("xyz.jpenilla.run-paper") version "2.3.1"
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 group = 'gg.doomsday'
@@ -12,21 +13,20 @@ repositories {
         name = "papermc-repo"
         url = "https://repo.papermc.io/repository/maven-public/"
     }
+    maven {
+        name = "luckperms-repo"
+        url = "https://oss.sonatype.org/content/repositories/snapshots/"
+    }
 }
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT")
+    compileOnly("net.luckperms:api:5.4")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.google.code.gson:gson:2.10.1")
 }
 
-tasks {
-    runServer {
-        // Configure the Minecraft version for our task.
-        // This is the only required configuration besides applying the plugin.
-        // Your plugin's jar (or shadowJar if present) will be used automatically.
-        minecraftVersion("1.20")
-    }
-}
-
+// target Java 17
 def targetJavaVersion = 17
 java {
     def javaVersion = JavaVersion.toVersion(targetJavaVersion)
@@ -39,17 +39,38 @@ java {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
-
     if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
         options.release.set(targetJavaVersion)
     }
 }
 
+// Configure shaded jar
+tasks.shadowJar {
+    archiveBaseName.set("DoomsdayCore")
+    archiveVersion.set("")     // no version in filename
+    archiveClassifier.set("")  // no "-all"
+    relocate 'okhttp3', 'gg.doomsday.core.lib.okhttp3'
+    relocate 'okio', 'gg.doomsday.core.lib.okio'
+    relocate 'com.google.gson', 'gg.doomsday.core.lib.gson'
+}
+
+// disable default jar
+jar.enabled = false
+build.dependsOn shadowJar
+
+// plugin.yml version replacement
 processResources {
     def props = [version: version]
     inputs.properties props
     filteringCharset 'UTF-8'
     filesMatching('plugin.yml') {
         expand props
+    }
+}
+
+// run-paper plugin (optional)
+tasks {
+    runServer {
+        minecraftVersion("1.20")
     }
 }

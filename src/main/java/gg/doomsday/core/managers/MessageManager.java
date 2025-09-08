@@ -76,9 +76,11 @@ public class MessageManager {
      */
     public String getMessage(String key, String placeholder, String value) {
         String message = getMessage(key);
+        // Translate color codes in replacement value
+        String translatedValue = ChatColor.translateAlternateColorCodes('&', value);
         // Support both %placeholder% and {placeholder} formats
-        message = message.replace("%" + placeholder + "%", value);
-        message = message.replace("{" + placeholder + "}", value);
+        message = message.replace("%" + placeholder + "%", translatedValue);
+        message = message.replace("{" + placeholder + "}", translatedValue);
         return message;
     }
     
@@ -98,9 +100,11 @@ public class MessageManager {
         
         String message = getMessage(key);
         for (int i = 0; i < placeholders.length; i++) {
+            // Translate color codes in replacement values
+            String translatedValue = ChatColor.translateAlternateColorCodes('&', values[i]);
             // Support both %placeholder% and {placeholder} formats
-            message = message.replace("%" + placeholders[i] + "%", values[i]);
-            message = message.replace("{" + placeholders[i] + "}", values[i]);
+            message = message.replace("%" + placeholders[i] + "%", translatedValue);
+            message = message.replace("{" + placeholders[i] + "}", translatedValue);
         }
         return message;
     }

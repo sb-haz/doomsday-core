@@ -797,6 +797,11 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
     private boolean handleLeaveNationFromGUI(Player player, String currentNation) {
         UUID playerId = player.getUniqueId();
         
+        if (!playerManager.canPlayerLeave(player)) {
+            player.sendMessage(ChatColor.RED + "Player leaving is currently disabled!");
+            return true;
+        }
+        
         if (!playerManager.canPlayerSwitch(playerId)) {
             player.sendMessage(ChatColor.RED + "You cannot leave your current nation!");
             long cooldown = playerManager.getSwitchCooldown();

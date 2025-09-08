@@ -13,3 +13,5 @@ players:
 settings:
   allowSwitching: true  # If false, players cannot leave their current nation (but new players can still join)
   switchCooldown: 86400000  # 24 hours in milliseconds (0 to disable cooldown)
+  allowPlayerJoining: true  # If false, players cannot join nations (admins can still manage)
+  allowPlayerLeaving: true  # If false, regular players cannot leave nations (admins can still manage)
