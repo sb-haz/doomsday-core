@@ -19,6 +19,7 @@ import gg.doomsday.core.gui.utils.ItemBuilder;
 import gg.doomsday.core.services.MissileService;
 import gg.doomsday.core.defense.AntiAirDefense;
 import gg.doomsday.core.defense.AntiAirDefenseManager;
+import gg.doomsday.core.fuel.AntiAirFuelManager;
 import gg.doomsday.core.items.ReinforcementHandler;
 import gg.doomsday.core.items.ReinforcementDetectorManager;
 import gg.doomsday.core.nations.NationManager;
@@ -548,9 +549,9 @@ public class GUIManager implements Listener {
             if (displayName.contains("Take Offline") || displayName.contains("Bring Online")) {
                 plugin.getLogger().info("Toggle button clicked");
                 handleAntiAirInfoToggle(player, event.getInventory(), displayName);
-            } else if (displayName.contains("Teleport to Defense")) {
-                plugin.getLogger().info("Teleport to Defense button clicked");
-                handleAntiAirInfoTeleport(player, event.getInventory());
+            } else if (displayName.contains("Deposit Fuel")) {
+                plugin.getLogger().info("Deposit Fuel button clicked");
+                handleAntiAirFuelDeposit(player, event.getInventory());
             }
         }
     }
@@ -696,64 +697,46 @@ public class GUIManager implements Listener {
         player.sendMessage("§a§lDefense system '" + defenseName + "' set to " + status + "!");
     }
     
-    private void handleAntiAirInfoTeleport(Player player, Inventory inventory) {
-        plugin.getLogger().info("=== HANDLE ANTI-AIR INFO TELEPORT DEBUG ===");
+    private void handleAntiAirFuelDeposit(Player player, Inventory inventory) {
+        plugin.getLogger().info("=== HANDLE ANTI-AIR FUEL DEPOSIT DEBUG ===");
         
-        // Find the defense info item to extract coordinates
+        // Find the defense info item to extract defense name
         ItemStack infoItem = inventory.getItem(13);
         if (infoItem == null || !infoItem.hasItemMeta()) {
             plugin.getLogger().warning("Could not find defense info item in GUI");
-            player.sendMessage("§cError: Could not identify defense location");
+            player.sendMessage("§cError: Could not identify defense system");
             player.closeInventory();
             return;
         }
         
-        List<String> lore = infoItem.getItemMeta().getLore();
-        double defenseX = 0, defenseY = 0, defenseZ = 0;
-        boolean foundPosition = false;
+        // Extract defense name from the item display name
+        String defenseName = infoItem.getItemMeta().getDisplayName()
+            .replaceAll("§[0-9a-fk-or]", "") // Remove color codes
+            .replace(" ", "_")
+            .toLowerCase();
         
-        for (String line : lore) {
-            String cleanLine = line.replaceAll("§[0-9a-fk-or]", ""); // Remove color codes
-            if (cleanLine.contains("Position:")) {
-                // Next line should contain coordinates
-                int index = lore.indexOf(line);
-                if (index + 1 < lore.size()) {
-                    String coordLine = lore.get(index + 1).replaceAll("§[0-9a-fk-or]", "");
-                    // Parse "  X: 123 Y: 45 Z: 678"
-                    try {
-                        String[] parts = coordLine.trim().split(" ");
-                        for (int i = 0; i < parts.length - 1; i++) {
-                            if (parts[i].equals("X:")) {
-                                defenseX = Double.parseDouble(parts[i + 1]);
-                            } else if (parts[i].equals("Y:")) {
-                                defenseY = Double.parseDouble(parts[i + 1]);
-                            } else if (parts[i].equals("Z:")) {
-                                defenseZ = Double.parseDouble(parts[i + 1]);
-                            }
-                        }
-                        foundPosition = true;
-                    } catch (Exception e) {
-                        plugin.getLogger().warning("Error parsing defense coordinates: " + e.getMessage());
-                    }
-                }
-                break;
-            }
-        }
+        plugin.getLogger().info("Extracted defense name: " + defenseName);
         
-        if (!foundPosition) {
-            plugin.getLogger().warning("Could not extract defense coordinates from anti-air info GUI");
-            player.sendMessage("§cError: Could not identify defense location");
-            player.closeInventory();
-            return;
-        }
-        
-        plugin.getLogger().info("Extracted defense coordinates: " + defenseX + ", " + defenseY + ", " + defenseZ);
-        
-        // Close inventory and teleport
+        // Close inventory
         player.closeInventory();
-        Location teleportLoc = new Location(player.getWorld(), defenseX, defenseY + 1, defenseZ);
-        player.teleport(teleportLoc);
-        player.sendMessage("§a§lTeleported to defense system location!");
+        
+        // Check if player has fuel items in inventory (similar to missile fuel system)
+        // For now, just add 50 fuel units as a placeholder
+        DoomsdayCore doomsdayCore = (DoomsdayCore) plugin;
+        AntiAirFuelManager fuelManager = doomsdayCore.getAntiAirFuelManager();
+        
+        int fuelToAdd = 50; // Default fuel amount
+        
+        if (fuelManager.addFuel(defenseName, fuelToAdd)) {
+            int newTotal = fuelManager.getFuel(defenseName);
+            int fuelRequired = fuelManager.getFuelRequirement(defenseName);
+            int shotsAvailable = newTotal / Math.max(1, fuelRequired);
+            
+            player.sendMessage("§a§l✓ Successfully deposited " + fuelToAdd + " fuel units!");
+            player.sendMessage("§7Defense fuel: §6" + newTotal + " §7units (§a" + shotsAvailable + " §7shots available)");
+        } else {
+            player.sendMessage("§c❌ Failed to deposit fuel!");
+        }
     }
     
 }

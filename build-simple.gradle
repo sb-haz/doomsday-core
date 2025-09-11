@@ -1,6 +1,6 @@
+// Simple build.gradle for testing compilation without Shadow plugin
 plugins {
     id 'java'
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
 group = 'gg.doomsday'
@@ -16,18 +16,14 @@ repositories {
         name = "luckperms-repo"
         url = "https://oss.sonatype.org/content/repositories/snapshots/"
     }
-    maven {
-        name = "essentials-repo"
-        url = "https://repo.essentialsx.net/releases/"
-    }
 }
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT")
     compileOnly("net.luckperms:api:5.4")
-    compileOnly("net.essentialsx:EssentialsX:2.20.1")
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-    implementation("com.google.code.gson:gson:2.10.1")
+    // Commented out for simple build - uncomment when shadow plugin works
+    // implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    // implementation("com.google.code.gson:gson:2.10.1")
 }
 
 // target Java 17
@@ -47,20 +43,6 @@ tasks.withType(JavaCompile).configureEach {
         options.release.set(targetJavaVersion)
     }
 }
-
-// Configure shaded jar
-tasks.shadowJar {
-    archiveBaseName.set("DoomsdayCore")
-    archiveVersion.set("")     // no version in filename
-    archiveClassifier.set("")  // no "-all"
-    relocate 'okhttp3', 'gg.doomsday.core.lib.okhttp3'
-    relocate 'okio', 'gg.doomsday.core.lib.okio'
-    relocate 'com.google.gson', 'gg.doomsday.core.lib.gson'
-}
-
-// disable default jar
-jar.enabled = false
-build.dependsOn shadowJar
 
 // plugin.yml version replacement
 processResources {

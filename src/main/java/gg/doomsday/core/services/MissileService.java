@@ -105,7 +105,7 @@ public class MissileService {
                 int currentFuel = fuelManager.getFuel(rocketKey);
                 int needed = fuelRequired - currentFuel;
                 player.sendMessage("§c❌ Insufficient fuel! Need " + needed + " more rocket fuel.");
-                player.sendMessage("§7Current fuel: §6" + currentFuel + " §7Required: §e" + fuelRequired);
+                player.sendMessage("§fCurrent fuel: §c" + currentFuel + " §fRequired: §e" + fuelRequired);
                 return false;
             }
             

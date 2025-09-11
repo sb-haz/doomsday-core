@@ -3,6 +3,8 @@ package gg.doomsday.core.commands;
 import gg.doomsday.core.nations.Nation;
 import gg.doomsday.core.nations.NationManager;
 import gg.doomsday.core.nations.NationPlayerManager;
+import gg.doomsday.core.nations.NationRoleManager;
+import gg.doomsday.core.nations.NationRole;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.cacheddata.CachedDataManager;
@@ -31,6 +33,7 @@ public class NationChatCommand implements CommandExecutor, TabCompleter {
     private final JavaPlugin plugin;
     private final NationPlayerManager nationPlayerManager;
     private final NationManager nationManager;
+    private NationRoleManager roleManager; // Optional, may be null
     private LuckPerms luckPerms;
     private FileConfiguration chatConfig;
     
@@ -38,6 +41,7 @@ public class NationChatCommand implements CommandExecutor, TabCompleter {
         this.plugin = plugin;
         this.nationPlayerManager = nationPlayerManager;
         this.nationManager = nationManager;
+        this.roleManager = null; // Will be set via setter if available
         
         // Load chat configuration
         loadChatConfig();
@@ -48,6 +52,10 @@ public class NationChatCommand implements CommandExecutor, TabCompleter {
         } catch (IllegalStateException e) {
             this.luckPerms = null;
         }
+    }
+    
+    public void setRoleManager(NationRoleManager roleManager) {
+        this.roleManager = roleManager;
     }
     
     @Override
@@ -133,13 +141,17 @@ public class NationChatCommand implements CommandExecutor, TabCompleter {
     }
     
     private String buildNationChatMessage(Player player, Nation nation, String message) {
-        // Get format from config
-        String chatFormat = chatConfig.getString("nation_chat.format", "&6[NATION] &f{player}{suffix}&7: &f{message}");
+        // Get format from config - updated to support roles
+        String chatFormat = chatConfig.getString("nation_chat.format", "&6[NATION]{role} &f{player}{suffix}&7: &f{message}");
         
         // Replace placeholders
         chatFormat = chatFormat.replace("{player}", player.getName());
         chatFormat = chatFormat.replace("{message}", message);
         chatFormat = chatFormat.replace("{nation}", nation.getDisplayName());
+        
+        // Handle role display
+        String roleDisplay = buildRoleDisplay(player);
+        chatFormat = chatFormat.replace("{role}", roleDisplay);
         
         // Handle suffix
         String suffix = getLuckPermsSuffix(player);
@@ -148,6 +160,35 @@ public class NationChatCommand implements CommandExecutor, TabCompleter {
         
         // Convert color codes and return
         return ChatColor.translateAlternateColorCodes('&', chatFormat);
+    }
+    
+    private String buildRoleDisplay(Player player) {
+        // Check if role display is enabled and role manager is available
+        if (!chatConfig.getBoolean("nation_chat.roles.enabled", true) || roleManager == null) {
+            return "";
+        }
+        
+        // Get player's role
+        NationRole playerRole = roleManager.getPlayerRole(player.getUniqueId());
+        
+        // Don't show citizen role if configured
+        boolean showCitizen = chatConfig.getBoolean("nation_chat.roles.show_citizen_role", false);
+        if (playerRole == NationRole.CITIZEN && !showCitizen) {
+            return "";
+        }
+        
+        // Get role configuration
+        String separator = chatConfig.getString("nation_chat.roles.separator", " ");
+        String roleFormat = chatConfig.getString("nation_chat.roles.format", " &f#{role}");
+        
+        // Get role color from role manager
+        String roleColor = roleManager.getRoleColor(playerRole);
+        
+        // Build the role display with colored role name
+        String coloredRoleName = roleColor + playerRole.getDisplayName();
+        String roleDisplay = roleFormat.replace("{role}", coloredRoleName);
+        
+        return roleDisplay;
     }
     
     private String getLuckPermsSuffix(Player player) {

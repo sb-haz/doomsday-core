@@ -15,8 +15,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import gg.doomsday.core.GUIManager;
+import gg.doomsday.core.DoomsdayCore;
 import gg.doomsday.core.defense.AntiAirDefense;
 import gg.doomsday.core.defense.AntiAirDefenseManager;
+import gg.doomsday.core.fuel.AntiAirFuelManager;
 import gg.doomsday.core.gui.utils.ItemBuilder;
 import gg.doomsday.core.config.ConfigManager;
 
@@ -173,24 +175,35 @@ public class BlockManager implements Listener {
                      defenseName.contains("core_defense") || defenseName.contains("hq9") ||
                      defenseName.contains("s400") ? "AUTOMATIC" : "MANUAL";
         
+        // Get fuel information
+        DoomsdayCore doomsdayCore = (DoomsdayCore) plugin;
+        AntiAirFuelManager fuelManager = doomsdayCore.getAntiAirFuelManager();
+        int currentFuel = fuelManager.getFuel(defenseName);
+        int fuelRequired = fuelManager.getFuelRequirement(defenseName);
+        String tier = fuelManager.getDefenseTier(defenseName);
+        
         // Main info item
         ItemStack infoItem = ItemBuilder.createItem(Material.BEACON, "§e" + defenseName.replace("_", " ").toUpperCase(),
             "§7Anti-Air Defense System",
             "",
             "§7Status: " + status,
             "§7Type: §6" + type,
+            "§7Tier: §b" + tier,
             "§7Range: §f" + (int)defense.getRange() + " blocks",
             "§7Accuracy: §f" + (int)(defense.getAccuracy() * 100) + "%",
             "§7Interceptor Speed: §f" + defense.getInterceptorSpeed(),
             "§7Reload Time: §f" + defense.getReloadTime() + "s",
             "§7Startup Time: §f" + defense.getStartupTime() + "s",
             "",
+            "§7Fuel: §6" + currentFuel + " §7units",
+            "§7Fuel per Shot: §c" + fuelRequired + " §7units",
+            "",
             "§7Position:",
             "§f  X: " + (int)loc.getX() + " Y: " + (int)loc.getY() + " Z: " + (int)loc.getZ()
         );
         gui.setItem(13, infoItem);
         
-        // Toggle online/offline button
+        // Toggle online/offline button (centered on the left side)
         ItemStack toggleItem;
         if (defense.isOperational()) {
             toggleItem = ItemBuilder.createItem(Material.RED_DYE, "§c§lTake Offline",
@@ -205,15 +218,19 @@ public class BlockManager implements Listener {
                 "§e> Click to set defense to ONLINE"
             );
         }
-        gui.setItem(11, toggleItem);
+        gui.setItem(12, toggleItem);
         
-        // Teleport to defense button
-        ItemStack teleportItem = ItemBuilder.createItem(Material.ENDER_PEARL, "§b§lTeleport to Defense",
-            "§7Teleport to this defense position",
+        // Fuel deposit button (centered on the right side)
+        ItemStack fuelItem = ItemBuilder.createItem(Material.LAVA_BUCKET, "§6§lDeposit Fuel",
+            "§7Add fuel to this defense system",
             "",
-            "§e> Click to teleport to defense location"
+            "§7Current Fuel: §6" + currentFuel + " §7units",
+            "§7Fuel per Shot: §c" + fuelRequired + " §7units",
+            "§7Shots Available: §a" + (currentFuel / Math.max(1, fuelRequired)) + " §7shots",
+            "",
+            "§e> Click to deposit fuel into this defense"
         );
-        gui.setItem(15, teleportItem);
+        gui.setItem(14, fuelItem);
         
         player.openInventory(gui);
     }

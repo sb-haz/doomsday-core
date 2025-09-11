@@ -1,5 +1,6 @@
 package gg.doomsday.core.nations;
 
+import gg.doomsday.core.data.PlayerDataManager;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -20,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class NationPlayerManager implements Listener {
     private final JavaPlugin plugin;
     private final NationManager nationManager;
+    private final PlayerDataManager playerDataManager;
     private FileConfiguration playersConfig;
     private File playersFile;
     
@@ -30,9 +32,10 @@ public class NationPlayerManager implements Listener {
     private final Map<String, Set<UUID>> onlinePlayersByNation = new ConcurrentHashMap<>();
     private final Map<UUID, String> onlinePlayerNations = new ConcurrentHashMap<>();
     
-    public NationPlayerManager(JavaPlugin plugin, NationManager nationManager) {
+    public NationPlayerManager(JavaPlugin plugin, NationManager nationManager, PlayerDataManager playerDataManager) {
         this.plugin = plugin;
         this.nationManager = nationManager;
+        this.playerDataManager = playerDataManager;
         this.nationPlayerCache = new NationPlayerCache(plugin);
         
         loadConfiguration();
@@ -178,6 +181,9 @@ public class NationPlayerManager implements Listener {
         // Update cache
         nationPlayerCache.addPlayerToNation(playerId, nationId);
         
+        // Update PlayerDataManager immediately
+        playerDataManager.setPlayerNation(playerId, nationId);
+        
         // Update legacy online tracking if player is online
         if (player.isOnline()) {
             addPlayerToOnlineTracking(playerId, nationId);
@@ -217,6 +223,9 @@ public class NationPlayerManager implements Listener {
         
         // Update cache
         nationPlayerCache.removePlayerFromNation(playerId);
+        
+        // Update PlayerDataManager immediately (clear nation)
+        playerDataManager.setPlayerNation(playerId, "");
         
         // Update legacy online tracking if player is online
         if (player.isOnline()) {

@@ -1,6 +1,7 @@
 package gg.doomsday.core.defense;
 
 import gg.doomsday.core.DoomsdayCore;
+import gg.doomsday.core.fuel.AntiAirFuelManager;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -103,6 +104,17 @@ public class AntiAirDefense {
             return false;
         }
 
+        // Check fuel requirements
+        DoomsdayCore doomsdayCore = (DoomsdayCore) plugin;
+        AntiAirFuelManager fuelManager = doomsdayCore.getAntiAirFuelManager();
+        int fuelRequired = fuelManager.getFuelRequirement(name);
+        
+        if (!fuelManager.hasSufficientFuel(name, fuelRequired)) {
+            int currentFuel = fuelManager.getFuel(name);
+            plugin.getLogger().info("Anti-air defense '" + name + "' has insufficient fuel (" + currentFuel + "/" + fuelRequired + ")");
+            return false;
+        }
+
         plugin.getLogger().info("Anti-air defense '" + name + "' detected threat, preparing to engage...");
         
         // Startup delay - defense needs time to acquire target and launch
@@ -117,10 +129,15 @@ public class AntiAirDefense {
                 // Set reload time when actually firing, not when detecting
                 lastShotTime = System.currentTimeMillis();
                 
+                // Consume fuel when actually firing
+                DoomsdayCore doomsdayCore = (DoomsdayCore) plugin;
+                AntiAirFuelManager fuelManager = doomsdayCore.getAntiAirFuelManager();
+                int fuelRequired = fuelManager.getFuelRequirement(name);
+                fuelManager.consumeFuel(name, fuelRequired);
+                
                 plugin.getLogger().info("Anti-air defense '" + name + "' launching interceptor!");
                 
                 // Send launch message using configurable messaging system
-                DoomsdayCore doomsdayCore = (DoomsdayCore) plugin;
                 String launchMessage = doomsdayCore.getMessageManager().getMessage("antiair.launched", "displayName", displayName);
                 doomsdayCore.getMessagingManager().sendAntiAirMessage(launchMessage, location, name);
                 

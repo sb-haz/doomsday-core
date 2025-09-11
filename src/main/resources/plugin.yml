@@ -2,7 +2,7 @@ name: Doomsday
 version: 1.0.0
 main: gg.doomsday.core.DoomsdayCore
 api-version: 1.20
-softdepend: [LuckPerms]
+softdepend: [LuckPerms, Essentials]
 
 commands:
   rocket:
@@ -14,11 +14,10 @@ commands:
     usage: /antiair status | /antiair list | /antiair online <name> | /antiair offline <name> | /antiair reload
     permission: rocket.antiair
     aliases: [aa]
-  nations:
+  nation:
     description: Comprehensive nations system with GUI (Players)
-    usage: /nations | /nations leave | /nations info [nation] | /nations teleport [nation] | /nations missiles [nation] | /nations disasters [nation] | /nations items
+    usage: /nation | /nation leave | /nation info [nation] | /nation teleport [nation] | /nation missiles [nation] | /nation disasters [nation] | /nation items
     permission: rocket.use
-    aliases: [nation]
   seasons:
     description: Manage game seasons (Staff Only)
     usage: /seasons current | /seasons create <id> | /seasons activate | /seasons archive

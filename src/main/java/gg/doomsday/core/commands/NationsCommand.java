@@ -38,7 +38,7 @@ public class NationsCommand implements CommandExecutor, TabCompleter, Listener {
     
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!command.getName().equalsIgnoreCase("nations")) {
+        if (!command.getName().equalsIgnoreCase("nation")) {
             return false;
         }
         

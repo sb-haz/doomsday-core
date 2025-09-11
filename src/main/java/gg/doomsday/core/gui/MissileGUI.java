@@ -163,8 +163,8 @@ public class MissileGUI implements Listener {
                 .setLore(
                     "§7Manage missile fuel",
                     "",
-                    "§7Current Fuel: §6" + fuelAvailable,
-                    "§7Required: §e" + fuelRequired,
+                    "§fCurrent Fuel: §6" + fuelAvailable,
+                    "§fRequired: §e" + fuelRequired,
                     "",
                     "§e> Click to deposit rocket fuel"
                 )

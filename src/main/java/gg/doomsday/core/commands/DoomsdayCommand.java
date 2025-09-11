@@ -458,8 +458,9 @@ public class DoomsdayCommand implements CommandExecutor, TabCompleter {
             Nation nation = nationManager.getAllNations().get(playerNation);
             String nationName = nation != null ? nation.getDisplayName() : playerNation;
             
-            player.sendMessage(ChatColor.GREEN + "✓ Assigned " + role.getColoredName() + " §ato " + targetPlayer.getName() + " in " + nationName);
-            targetPlayer.sendMessage(ChatColor.YELLOW + "An admin has assigned you the role: " + role.getColoredName());
+            String coloredRoleName = ChatColor.translateAlternateColorCodes('&', roleManager.getRoleColor(role) + role.getDisplayName());
+            player.sendMessage(ChatColor.GREEN + "✓ Assigned " + coloredRoleName + " §ato " + targetPlayer.getName() + " in " + nationName);
+            targetPlayer.sendMessage(ChatColor.YELLOW + "An admin has assigned you the role: " + coloredRoleName);
         } else {
             player.sendMessage(ChatColor.RED + "Failed to assign role to " + targetPlayer.getName());
             player.sendMessage(ChatColor.GRAY + "Reason: No available slots or player already has a role");
@@ -489,8 +490,9 @@ public class DoomsdayCommand implements CommandExecutor, TabCompleter {
         NationRole currentRole = roleManager.getPlayerRole(targetPlayer.getUniqueId());
         
         if (roleManager.adminRemoveRole(targetPlayer.getUniqueId())) {
-            player.sendMessage(ChatColor.GREEN + "✓ Removed " + currentRole.getColoredName() + " §afrom " + targetPlayer.getName());
-            targetPlayer.sendMessage(ChatColor.YELLOW + "An admin has removed your role: " + currentRole.getColoredName());
+            String coloredRoleName = ChatColor.translateAlternateColorCodes('&', roleManager.getRoleColor(currentRole) + currentRole.getDisplayName());
+            player.sendMessage(ChatColor.GREEN + "✓ Removed " + coloredRoleName + " §afrom " + targetPlayer.getName());
+            targetPlayer.sendMessage(ChatColor.YELLOW + "An admin has removed your role: " + coloredRoleName);
         } else {
             player.sendMessage(ChatColor.RED + "Failed to remove role from " + targetPlayer.getName());
         }
@@ -590,89 +592,79 @@ public class DoomsdayCommand implements CommandExecutor, TabCompleter {
     }
     
     private boolean handleHelp(Player player) {
-        player.sendMessage(ChatColor.GOLD + "=== 🎮 Doomsday Plugin Commands ===");
-        player.sendMessage("");
+        player.sendMessage(ChatColor.WHITE + "" + ChatColor.ITALIC + "--------------------");
+        player.sendMessage(ChatColor.GOLD + "Doomsday Plugin Commands");
         
-        player.sendMessage(ChatColor.YELLOW + "🚀 Rocket System:");
-        player.sendMessage(ChatColor.GRAY + "/rocket <missile_name>" + ChatColor.WHITE + " - Launch missiles (r1, r2, r3, r4, r5)");
-        player.sendMessage(ChatColor.GRAY + "/rocket options" + ChatColor.WHITE + " - View missile configurations");
+        player.sendMessage(ChatColor.YELLOW + "Rocket System:");
+        player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/rocket <missile_name> " + ChatColor.GRAY + "- Launch missiles (r1, r2, r3, r4, r5)");
+        player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/rocket options " + ChatColor.GRAY + "- View missile configurations");
         if (player.hasPermission("rocket.reload")) {
-            player.sendMessage(ChatColor.GRAY + "/rocket reload" + ChatColor.WHITE + " - Reload rocket configs");
-            player.sendMessage(ChatColor.GRAY + "/rocket powder [amount]" + ChatColor.WHITE + " - Get reinforcement powder");
-            player.sendMessage(ChatColor.GRAY + "/rocket helmet [amount]" + ChatColor.WHITE + " - Get detection helmets");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/rocket reload " + ChatColor.GRAY + "- Reload rocket configs");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/rocket powder [amount] " + ChatColor.GRAY + "- Get reinforcement powder");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/rocket helmet [amount] " + ChatColor.GRAY + "- Get detection helmets");
         }
-        player.sendMessage("");
         
-        player.sendMessage(ChatColor.YELLOW + "🛡️ Anti-Air Defense:");
-        player.sendMessage(ChatColor.GRAY + "/antiair status" + ChatColor.WHITE + " - View defense systems status");
+        player.sendMessage(ChatColor.YELLOW + "Anti-Air Defense:");
+        player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/antiair status " + ChatColor.GRAY + "- View defense systems status");
         if (player.hasPermission("rocket.antiair")) {
-            player.sendMessage(ChatColor.GRAY + "/antiair online <name>" + ChatColor.WHITE + " - Bring defense online");
-            player.sendMessage(ChatColor.GRAY + "/antiair offline <name>" + ChatColor.WHITE + " - Take defense offline");
-            player.sendMessage(ChatColor.GRAY + "/antiair reload" + ChatColor.WHITE + " - Reload anti-air configs");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/antiair online <name> " + ChatColor.GRAY + "- Bring defense online");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/antiair offline <name> " + ChatColor.GRAY + "- Take defense offline");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/antiair reload " + ChatColor.GRAY + "- Reload anti-air configs");
         }
-        player.sendMessage("");
         
-        player.sendMessage(ChatColor.YELLOW + "🗺️ Nations System:");
-        player.sendMessage(ChatColor.GRAY + "/nations" + ChatColor.WHITE + " - Check your current nation");
-        player.sendMessage(ChatColor.GRAY + "/nations gui" + ChatColor.WHITE + " - Open nations overview GUI");
-        player.sendMessage(ChatColor.GRAY + "/nations teleport [nation]" + ChatColor.WHITE + " - Teleport to nation center");
-        player.sendMessage("");
+        player.sendMessage(ChatColor.YELLOW + "Nations System:");
+        player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/nations " + ChatColor.GRAY + "- Check your current nation");
+        player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/nations gui " + ChatColor.GRAY + "- Open nations overview GUI");
+        player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/nations teleport [nation] " + ChatColor.GRAY + "- Teleport to nation center");
         
-        player.sendMessage(ChatColor.YELLOW + "🏆 Seasons System:");
+        player.sendMessage(ChatColor.YELLOW + "Seasons System:");
         if (player.hasPermission("season.admin")) {
-            player.sendMessage(ChatColor.GRAY + "/season current" + ChatColor.WHITE + " - View current season");
-            player.sendMessage(ChatColor.GRAY + "/season create <id>" + ChatColor.WHITE + " - Create new season");
-            player.sendMessage(ChatColor.GRAY + "/season activate" + ChatColor.WHITE + " - Activate season");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/season current " + ChatColor.GRAY + "- View current season");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/season create <id> " + ChatColor.GRAY + "- Create new season");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/season activate " + ChatColor.GRAY + "- Activate season");
         } else {
-            player.sendMessage(ChatColor.GRAY + "/season current" + ChatColor.WHITE + " - View current season info");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/season current " + ChatColor.GRAY + "- View current season info");
         }
-        player.sendMessage("");
         
         if (player.hasPermission("rocket.disaster")) {
-            player.sendMessage(ChatColor.YELLOW + "🌪️ Natural Disasters:");
-            player.sendMessage(ChatColor.GRAY + "/disaster trigger <nation> <type>" + ChatColor.WHITE + " - Trigger disaster");
-            player.sendMessage(ChatColor.GRAY + "/disaster stop <nation> <type>" + ChatColor.WHITE + " - Stop disaster");
-            player.sendMessage(ChatColor.GRAY + "/disaster status" + ChatColor.WHITE + " - View disaster status");
-            player.sendMessage("");
+            player.sendMessage(ChatColor.YELLOW + "Natural Disasters:");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/disaster trigger <nation> <type> " + ChatColor.GRAY + "- Trigger disaster");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/disaster stop <nation> <type> " + ChatColor.GRAY + "- Stop disaster");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/disaster status " + ChatColor.GRAY + "- View disaster status");
         }
         
         if (player.hasPermission("rocket.reload")) {
-            player.sendMessage(ChatColor.YELLOW + "⚙️ System Management:");
-            player.sendMessage(ChatColor.GRAY + "/dd reload" + ChatColor.WHITE + " - Reload everything + world markers");
-            player.sendMessage(ChatColor.GRAY + "/dd blocks place" + ChatColor.WHITE + " - Place world markers");
-            player.sendMessage(ChatColor.GRAY + "/dd blocks remove" + ChatColor.WHITE + " - Remove world markers");
-            player.sendMessage(ChatColor.GRAY + "/dd kill-entities" + ChatColor.WHITE + " - Kill all non-player entities");
-            player.sendMessage("");
+            player.sendMessage(ChatColor.YELLOW + "System Management:");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd reload " + ChatColor.GRAY + "- Reload everything + world markers");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd blocks place " + ChatColor.GRAY + "- Place world markers");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd blocks remove " + ChatColor.GRAY + "- Remove world markers");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd kill-entities " + ChatColor.GRAY + "- Kill all non-player entities");
             
-            player.sendMessage(ChatColor.YELLOW + "👑 Nation Administration:");
-            player.sendMessage(ChatColor.GRAY + "/dd nation set <player> <nation|none>" + ChatColor.WHITE + " - Set player's nation");
-            player.sendMessage(ChatColor.GRAY + "/dd nation remove <player>" + ChatColor.WHITE + " - Remove player from nation");
-            player.sendMessage(ChatColor.GRAY + "/dd nation info <player>" + ChatColor.WHITE + " - View player's nation info");
-            player.sendMessage("");
+            player.sendMessage(ChatColor.YELLOW + "Nation Administration:");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd nation set <player> <nation|none> " + ChatColor.GRAY + "- Set player's nation");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd nation remove <player> " + ChatColor.GRAY + "- Remove player from nation");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd nation info <player> " + ChatColor.GRAY + "- View player's nation info");
             
-            player.sendMessage(ChatColor.YELLOW + "🎭 Role Management:");
-            player.sendMessage(ChatColor.GRAY + "/dd role add <player> <role>" + ChatColor.WHITE + " - Assign role to player");
-            player.sendMessage(ChatColor.GRAY + "/dd role remove <player>" + ChatColor.WHITE + " - Remove player's role");
-            player.sendMessage(ChatColor.GRAY + "/dd role list <nation>" + ChatColor.WHITE + " - List nation role assignments");
-            player.sendMessage(ChatColor.GRAY + "/dd role window" + ChatColor.WHITE + " - Check claim window status");
-            player.sendMessage(ChatColor.GRAY + "/dd role assign" + ChatColor.WHITE + " - Force random assignment");
-            player.sendMessage("");
+            player.sendMessage(ChatColor.YELLOW + "Role Management:");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd role add <player> <role> " + ChatColor.GRAY + "- Assign role to player");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd role remove <player> " + ChatColor.GRAY + "- Remove player's role");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd role list <nation> " + ChatColor.GRAY + "- List nation role assignments");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd role window " + ChatColor.GRAY + "- Check claim window status");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd role assign " + ChatColor.GRAY + "- Force random assignment");
             
-            player.sendMessage(ChatColor.YELLOW + "🔧 Nation Settings:");
-            player.sendMessage(ChatColor.GRAY + "/dd toggle join" + ChatColor.WHITE + " - Enable/disable player joining");
-            player.sendMessage(ChatColor.GRAY + "/dd toggle leave" + ChatColor.WHITE + " - Enable/disable player leaving");
-            player.sendMessage(ChatColor.GRAY + "/dd toggle status" + ChatColor.WHITE + " - View current settings");
-            player.sendMessage("");
+            player.sendMessage(ChatColor.YELLOW + "Nation Settings:");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd toggle join " + ChatColor.GRAY + "- Enable/disable player joining");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd toggle leave " + ChatColor.GRAY + "- Enable/disable player leaving");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd toggle status " + ChatColor.GRAY + "- View current settings");
         }
         
-        player.sendMessage(ChatColor.YELLOW + "💬 Utility:");
-        player.sendMessage(ChatColor.GRAY + "/cc <message>" + ChatColor.WHITE + " - Send colored chat (use & codes)");
+        player.sendMessage(ChatColor.YELLOW + "Utility:");
+        player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/cc <message> " + ChatColor.GRAY + "- Send colored chat (use & codes)");
         if (player.hasPermission("rocket.reload")) {
-            player.sendMessage(ChatColor.GRAY + "/rr" + ChatColor.WHITE + " - Quick plugin reload");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/rr " + ChatColor.GRAY + "- Quick plugin reload");
         }
-        player.sendMessage("");
         
-        player.sendMessage(ChatColor.GRAY + "💡 " + ChatColor.ITALIC + "Use " + ChatColor.YELLOW + "/dd help" + ChatColor.GRAY + ChatColor.ITALIC + " to see this help again!");
+        player.sendMessage(ChatColor.WHITE + "" + ChatColor.ITALIC + "--------------------");
         return true;
     }
     
@@ -688,13 +680,19 @@ public class DoomsdayCommand implements CommandExecutor, TabCompleter {
         antiAirManager.reloadDefenses();
         nationManager.reload();
         
+        // Reload chat and role configurations
+        plugin.getCustomChatListener().reloadChatConfig();
+        if (roleManager != null) {
+            roleManager.reload();
+        }
+        
         // Reload world markers
         World world = player.getWorld();
         blockManager.removeAllBlocks(world);
         blockManager.placeAllBlocks(world);
         
         player.sendMessage(ChatColor.GREEN + "✅ Complete reload finished!");
-        player.sendMessage(ChatColor.GRAY + "Reloaded: configs, items, messages, anti-air, disasters, world markers");
+        player.sendMessage(ChatColor.GRAY + "Reloaded: configs, items, messages, anti-air, disasters, chat, roles, world markers");
         
         return true;
     }
@@ -740,41 +738,42 @@ public class DoomsdayCommand implements CommandExecutor, TabCompleter {
     
     private boolean reloadChat(Player player) {
         plugin.getCustomChatListener().reloadChatConfig();
-        player.sendMessage(ChatColor.GREEN + "✅ Reloaded chat configuration!");
+        if (roleManager != null) {
+            roleManager.reload();
+        }
+        player.sendMessage(ChatColor.GREEN + "✅ Reloaded chat and role configurations!");
         return true;
     }
     
     private void showUsage(Player player) {
-        player.sendMessage(ChatColor.GOLD + "=== Doomsday Master Control ===");
-        player.sendMessage("");
-        player.sendMessage(ChatColor.YELLOW + "/dd help" + ChatColor.GRAY + " - Show all available commands");
-        player.sendMessage(ChatColor.YELLOW + "/dd reload" + ChatColor.GRAY + " - Reload everything (configs + world markers)");
+        player.sendMessage(ChatColor.WHITE + "" + ChatColor.ITALIC + "--------------------");
+        player.sendMessage(ChatColor.GOLD + "Doomsday Master Control");
+        player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd help " + ChatColor.GRAY + "- Show all available commands");
+        player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd reload " + ChatColor.GRAY + "- Reload everything (configs + world markers)");
         
         if (player.hasPermission("rocket.reload")) {
-            player.sendMessage("");
             player.sendMessage(ChatColor.YELLOW + "Specific Reload Commands:");
-            player.sendMessage(ChatColor.GRAY + "/dd reload config" + ChatColor.WHITE + " - Reload configuration files only");
-            player.sendMessage(ChatColor.GRAY + "/dd reload blocks" + ChatColor.WHITE + " - Reload world markers only");
-            player.sendMessage(ChatColor.GRAY + "/dd reload items" + ChatColor.WHITE + " - Reload custom items only");
-            player.sendMessage(ChatColor.GRAY + "/dd reload messages" + ChatColor.WHITE + " - Reload message files only");
-            player.sendMessage(ChatColor.GRAY + "/dd reload antiair" + ChatColor.WHITE + " - Reload anti-air systems only");
-            player.sendMessage(ChatColor.GRAY + "/dd reload disasters" + ChatColor.WHITE + " - Reload disaster configs only");
-            player.sendMessage("");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd reload config " + ChatColor.GRAY + "- Reload configuration files only");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd reload blocks " + ChatColor.GRAY + "- Reload world markers only");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd reload items " + ChatColor.GRAY + "- Reload custom items only");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd reload messages " + ChatColor.GRAY + "- Reload message files only");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd reload antiair " + ChatColor.GRAY + "- Reload anti-air systems only");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd reload disasters " + ChatColor.GRAY + "- Reload disaster configs only");
+            
             player.sendMessage(ChatColor.YELLOW + "Block & Entity Management:");
-            player.sendMessage(ChatColor.GRAY + "/dd blocks place" + ChatColor.WHITE + " - Place world markers");
-            player.sendMessage(ChatColor.GRAY + "/dd blocks remove" + ChatColor.WHITE + " - Remove world markers");
-            player.sendMessage(ChatColor.GRAY + "/dd blocks reload" + ChatColor.WHITE + " - Remove and replace markers");
-            player.sendMessage(ChatColor.GRAY + "/dd kill-entities" + ChatColor.WHITE + " - Kill all non-player entities");
-            player.sendMessage("");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd blocks place " + ChatColor.GRAY + "- Place world markers");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd blocks remove " + ChatColor.GRAY + "- Remove world markers");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd blocks reload " + ChatColor.GRAY + "- Remove and replace markers");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd kill-entities " + ChatColor.GRAY + "- Kill all non-player entities");
+            
             player.sendMessage(ChatColor.YELLOW + "Nation Administration:");
-            player.sendMessage(ChatColor.GRAY + "/dd nation set <player> <nation|none>" + ChatColor.WHITE + " - Set player's nation");
-            player.sendMessage(ChatColor.GRAY + "/dd nation remove <player>" + ChatColor.WHITE + " - Remove player from nation");
-            player.sendMessage(ChatColor.GRAY + "/dd role add <player> <role>" + ChatColor.WHITE + " - Assign player roles");
-            player.sendMessage(ChatColor.GRAY + "/dd toggle join/leave" + ChatColor.WHITE + " - Toggle player permissions");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd nation set <player> <nation|none> " + ChatColor.GRAY + "- Set player's nation");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd nation remove <player> " + ChatColor.GRAY + "- Remove player from nation");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd role add <player> <role> " + ChatColor.GRAY + "- Assign player roles");
+            player.sendMessage(ChatColor.GRAY + "- " + ChatColor.WHITE + "/dd toggle join/leave " + ChatColor.GRAY + "- Toggle player permissions");
         }
         
-        player.sendMessage("");
-        player.sendMessage(ChatColor.GRAY + "💡 Use " + ChatColor.YELLOW + "/dd help" + ChatColor.GRAY + " for a complete command overview!");
+        player.sendMessage(ChatColor.WHITE + "" + ChatColor.ITALIC + "--------------------");
     }
     
     @Override

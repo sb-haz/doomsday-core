@@ -1,5 +1,6 @@
 package gg.doomsday.core.ai;
 
+import gg.doomsday.core.data.PlayerDataManager;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -17,7 +18,7 @@ public class AIService {
     
     private final JavaPlugin plugin;
     private DeepSeekClient deepSeekClient;
-    private final PlayerStatsManager statsManager;
+    private final PlayerDataManager dataManager;
     private YamlConfiguration aiConfig;
     
     private String systemPrompt;
@@ -30,10 +31,10 @@ public class AIService {
     private final Map<UUID, List<DeepSeekClient.ChatMessage>> conversationHistory;
     private final Map<UUID, List<Long>> requestTimestamps;
     
-    public AIService(JavaPlugin plugin, YamlConfiguration aiConfig, PlayerStatsManager statsManager) {
+    public AIService(JavaPlugin plugin, YamlConfiguration aiConfig, PlayerDataManager dataManager) {
         this.plugin = plugin;
         this.aiConfig = aiConfig;
-        this.statsManager = statsManager;
+        this.dataManager = dataManager;
         this.conversationHistory = new ConcurrentHashMap<>();
         this.requestTimestamps = new ConcurrentHashMap<>();
         
@@ -168,7 +169,7 @@ public class AIService {
     }
     
     private void updatePlayerStats(UUID playerUUID) {
-        PlayerStatsManager.PlayerAIStats stats = statsManager.getPlayerStats(playerUUID);
+        PlayerDataManager.PlayerData stats = dataManager.getPlayerData(playerUUID);
         
         String today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
         if (!today.equals(stats.getLastResetDate())) {
@@ -180,7 +181,7 @@ public class AIService {
         stats.setRequestsToday(stats.getRequestsToday() + 1);
         stats.setLastRequestTime(System.currentTimeMillis());
         
-        statsManager.savePlayerStats(playerUUID, stats);
+        dataManager.savePlayerData(playerUUID, stats);
     }
     
     private List<DeepSeekClient.ChatMessage> buildConversation(UUID playerUUID, String userMessage) {
@@ -211,11 +212,37 @@ public class AIService {
     public void clearPlayerMemory(UUID playerUUID) {
         conversationHistory.remove(playerUUID);
         requestTimestamps.remove(playerUUID);
-        statsManager.clearPlayerMemory(playerUUID);
+        dataManager.clearPlayerMemory(playerUUID);
     }
     
-    public PlayerStatsManager.PlayerAIStats getPlayerStats(UUID playerUUID) {
-        return statsManager.getPlayerStats(playerUUID);
+    public PlayerDataManager.PlayerData getPlayerStats(UUID playerUUID) {
+        return dataManager.getPlayerData(playerUUID);
+    }
+    
+    public String[] getRateLimitInfo(UUID playerUUID) {
+        List<Long> timestamps = requestTimestamps.computeIfAbsent(playerUUID, k -> new ArrayList<>());
+        long currentTime = System.currentTimeMillis();
+        
+        // Clean old timestamps (older than 1 hour)
+        timestamps.removeIf(timestamp -> currentTime - timestamp > 3600000);
+        
+        // Count requests in the last minute
+        long minuteAgo = currentTime - 60000;
+        long recentMinuteRequests = timestamps.stream()
+                .mapToLong(timestamp -> timestamp)
+                .filter(timestamp -> timestamp > minuteAgo)
+                .count();
+        
+        // Total requests in the last hour
+        int recentHourRequests = timestamps.size();
+        
+        // Return array: [currentMinuteRequests, currentHourRequests, maxPerMinute, maxPerHour]
+        return new String[]{
+            String.valueOf(recentMinuteRequests),
+            String.valueOf(recentHourRequests), 
+            String.valueOf(maxRequestsPerMinute),
+            String.valueOf(maxRequestsPerHour)
+        };
     }
     
     public boolean reloadConfig() {

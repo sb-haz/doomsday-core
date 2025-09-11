@@ -43,12 +43,12 @@ chat:
     # Enable role display in chat
     enabled: true
     # Show roles only to same nation members
-    same_nation_only: true
+    same_nation_only: false
     # Role separator (text between nation and role)
     separator: " "
-    # Role format
-    format: "&8{role}"
-    # Show role for Citizens (default role)
+    # Role format - the {role} placeholder will include the color from roles.yml
+    format: "&8#{role}&7"
+    # Show role for Citizens (default role) - disable to hide basic citizens
     show_citizen_role: false
   
   # Console logging
@@ -58,8 +58,8 @@ chat:
     # Include colors in console log (some consoles don't support colors)
     include_colors: false
   
-  # Debug mode
-  debug: false
+  # Debug mode - enable for testing
+  debug: true
 
 # Nation Chat Configuration (/n command)
 nation_chat:
@@ -69,10 +69,20 @@ nation_chat:
   # Nation chat format
   # Available placeholders:
   # {nation} - Player's nation display name (optional - they already know their nation)
+  # {role} - Player's role (colored based on roles.yml)
   # {player} - Player's name
   # {suffix} - LuckPerms suffix (if available)
   # {message} - The chat message
-  format: "&6[NATION] &f{player}{suffix}&7: &f{message}"
+  format: "&6[NATION]{role} &f{player}{suffix}&7: &f{message}"
+  
+  # Role formatting for nation chat
+  roles:
+    # Enable role display in nation chat
+    enabled: true
+    # Role format for nation chat
+    format: " &f#{role}"
+    # Show role for Citizens (default role)
+    show_citizen_role: true
   
   # Alternative format if you want to show nation name
   # format: "&6[NATION] &7({nation}) &f{player}{suffix}&7: &f{message}"

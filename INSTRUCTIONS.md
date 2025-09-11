@@ -63,150 +63,217 @@ String stats = nationPlayerManager.getCacheStats();
 nationPlayerManager.getNationPlayerCache().setDebug(true);
 ```
 
-# User Data Management
+# Player Data Management
 
 ## Overview
-All user-related data storage MUST go through the UserDataService system. This provides a consistent interface for managing user data with support for different storage backends (currently file-based, with future database support planned).
+All player-related data storage MUST go through the PlayerDataManager system. This provides a centralized, persistent storage system for all player data including AI stats, profile information, nation assignments, roles, and more.
 
 ## Core Classes
-- `gg.doomsday.core.data.UserDataService` - Interface for user data operations
-- `gg.doomsday.core.data.FileUserDataService` - File-based implementation (current)
+- `gg.doomsday.core.data.PlayerDataManager` - Centralized player data management (current implementation)
+- `gg.doomsday.core.data.PlayerDataManager.PlayerData` - Player data container with all sections
+
+## **IMPORTANT: All Systems Must Use PlayerDataManager**
+Every system that stores player data MUST use PlayerDataManager to ensure:
+- ✅ **Immediate persistence** - Data is saved instantly when changed
+- ✅ **Consistency** - All systems use the same data source
+- ✅ **Automatic migration** - Old data is automatically converted
+- ✅ **Centralized access** - Single point of truth for all player data
 
 ## Usage Guidelines
 
-### 1. Service Injection
-Always inject the UserDataService through your plugin's main class:
+### 1. Access Through Main Plugin
+Always access PlayerDataManager through the main plugin class:
 
 ```java
-private final UserDataService userDataService;
+// Get the PlayerDataManager instance
+PlayerDataManager playerDataManager = ((DoomsdayCore) plugin).getPlayerDataManager();
 
-public YourClass(JavaPlugin plugin, UserDataService userDataService) {
-    this.userDataService = userDataService;
+// Or inject in constructor (recommended)
+private final PlayerDataManager playerDataManager;
+
+public YourClass(JavaPlugin plugin, PlayerDataManager playerDataManager) {
+    this.playerDataManager = playerDataManager;
 }
 ```
 
 ### 2. Basic Operations
 
-#### Loading User Data
+#### Getting Player Data
 ```java
-// Load complete user data
-CompletableFuture<YamlConfiguration> userData = userDataService.loadUserData(player);
+// Get complete player data
+PlayerDataManager.PlayerData playerData = playerDataManager.getPlayerData(playerUUID);
 
-// Get specific value with default
-CompletableFuture<Integer> kills = userDataService.getUserValue(player, "stats.kills", 0);
-
-// Usage example
-userDataService.getUserValue(player, "stats.kills", 0)
-    .thenAccept(kills -> {
-        player.sendMessage("You have " + kills + " kills!");
-    });
+// Access specific sections
+String currentNation = playerData.getCurrentNation();
+NationRole currentRole = playerData.getCurrentRole();
+int totalRequests = playerData.getTotalRequests();
+String lastKnownUsername = playerData.getLastKnownUsername();
 ```
 
-#### Saving User Data
+#### Updating Specific Data
 ```java
-// Set specific value
-userDataService.setUserValue(player, "stats.kills", newKillCount)
-    .thenAccept(success -> {
-        if (success) {
-            player.sendMessage("Stats updated!");
-        }
-    });
+// Update nation assignment (automatically saves)
+playerDataManager.setPlayerNation(playerUUID, "america");
 
-// Increment numeric value
-userDataService.incrementUserValue(player, "stats.kills", 1)
-    .thenAccept(newValue -> {
-        player.sendMessage("Kill count: " + newValue);
-    });
+// Assign role (automatically saves)
+playerDataManager.assignPlayerRole(playerUUID, NationRole.ARMYCHIEF, "ADMIN");
+
+// Remove role (automatically saves) 
+playerDataManager.removePlayerRole(playerUUID, "ADMIN");
+
+// Update login information (automatically saves)
+playerDataManager.updatePlayerLogin(playerUUID, "PlayerName");
 ```
 
 #### Complex Data Operations
 ```java
-// For complex operations, load, modify, then save
-userDataService.loadUserData(player)
-    .thenCompose(config -> {
-        // Modify config
-        config.set("nations.currentNation", "america");
-        config.set("nations.joinDate", System.currentTimeMillis());
-        
-        // Save modified data
-        return userDataService.saveUserData(player, config);
-    })
-    .thenAccept(success -> {
-        if (success) {
-            player.sendMessage("Nation data updated!");
-        }
-    });
+// For complex operations, get data, modify, then save
+PlayerDataManager.PlayerData playerData = playerDataManager.getPlayerData(playerUUID);
+
+// Modify multiple fields
+playerData.setCurrentNation("america");
+playerData.setTotalRequests(playerData.getTotalRequests() + 1);
+playerData.setLastKnownUsername(player.getName());
+
+// Save all changes at once
+playerDataManager.savePlayerData(playerUUID, playerData);
 ```
 
 ### 3. Data Structure Standards
 
-#### Standard Paths
-Use these standardized paths for common data:
+#### Standard Data Structure
+PlayerDataManager uses the following organized structure:
 
 ```yaml
-# Player statistics
-stats:
-  playtime: 0
-  joins: 0
-  kills: 0
-  deaths: 0
-  missilesLaunched: 0
-  blocksDestroyed: 0
+# AI-related data
+ai:
+  total_requests: 0
+  requests_today: 0
+  last_request_time: 0
+  last_reset_date: ""
 
-# Player preferences
-preferences:
-  receiveNotifications: true
-  showCoordinates: true
+# Profile information
+profile:
+  last_login: 1234567890
+  last_known_username: "PlayerName"
 
-# Nation-related data
-nations:
-  currentNation: "america"
-  joinDate: 1234567890
-  switchCooldown: 0
+# Nation assignments
+nation:
+  current_nation: "america"
 
-# Achievement data
-achievements:
-  unlocked: []
-  progress: {}
-
-# Custom plugin data
-customData:
-  yourPluginName:
-    someValue: 123
+# Role assignments  
+roles:
+  current_role: "ARMYCHIEF"
+  role_assignment_time: 1234567890
+  assigned_by: "ADMIN"
 ```
 
-### 4. Initialization and Cleanup
-
-#### In Plugin onEnable()
+#### Data Field Access
 ```java
-@Override
-public void onEnable() {
-    // Initialize user data service
-    userDataService = new FileUserDataService(this);
-    userDataService.initialize().thenAccept(success -> {
-        if (success) {
-            getLogger().info("User data service initialized successfully");
-        } else {
-            getLogger().severe("Failed to initialize user data service!");
-            setEnabled(false);
-        }
-    });
-}
+// AI Data
+playerData.getTotalRequests()
+playerData.getRequestsToday()
+playerData.getLastRequestTime()
+playerData.getLastResetDate()
+
+// Profile Data  
+playerData.getLastLogin()
+playerData.getLastKnownUsername()
+
+// Nation Data
+playerData.getCurrentNation()
+
+// Role Data
+playerData.getCurrentRole()
+playerData.getRoleAssignmentTime()
+playerData.getAssignedBy()
 ```
 
-#### In Plugin onDisable()
+### 4. Critical Integration Rules
+
+#### **Nation System Integration**
+When a player joins/leaves a nation, the system MUST update PlayerDataManager:
 ```java
-@Override
-public void onDisable() {
-    if (userDataService != null) {
-        userDataService.shutdown().join(); // Wait for completion
-    }
-}
+// In NationPlayerManager.joinNation() - ALREADY IMPLEMENTED
+playerDataManager.setPlayerNation(playerId, nationId);
+
+// In NationPlayerManager.leaveNation() - ALREADY IMPLEMENTED  
+playerDataManager.setPlayerNation(playerId, "");
 ```
 
-### 5. Error Handling
+#### **Role System Integration** 
+When roles are assigned/removed, the system MUST update PlayerDataManager:
+```java
+// In NationRoleManager.assignRole() - ALREADY IMPLEMENTED
+playerDataManager.assignPlayerRole(playerId, role, assignedBy);
 
-Always handle CompletableFuture exceptions:
+// In NationRoleManager.removeRole() - ALREADY IMPLEMENTED
+playerDataManager.removePlayerRole(playerId, removedBy);
+```
+
+#### **Login Tracking Integration**
+When players join the server, update their profile data:
+```java
+// In PlayerJoinEvent - ALREADY IMPLEMENTED IN AIPlayerListener
+playerDataManager.createPlayerDataFile(playerUUID, playerName);
+playerDataManager.updatePlayerLogin(playerUUID, playerName);
+```
+
+### 5. File Structure and Migration
+
+#### File Location
+Player data files are stored in:
+```
+plugins/DoomsdayCore/player_data/
+├── 12345678-1234-1234-1234-123456789abc.yml
+├── 87654321-4321-4321-4321-cba987654321.yml
+└── ...
+```
+
+#### Automatic Migration
+The system automatically migrates from the old player_stats structure:
+- Old `player_stats/*.yml` files are converted to the new format
+- AI data is preserved under the `ai:` section
+- New sections (profile, nation, roles) are initialized
+
+### 6. Benefits of the New System
+
+#### ✅ **Immediate Persistence**
+- Nation assignments persist instantly when changed
+- Role assignments survive server restarts
+- All data is saved immediately on change
+
+#### ✅ **Centralized Data Management**
+- Single source of truth for all player data
+- No more scattered data across multiple files/systems
+- Consistent data access patterns
+
+#### ✅ **Automatic Synchronization** 
+- Nation system automatically updates player data files
+- Role system automatically updates player data files
+- Login system automatically updates profile information
+
+### 7. Testing Your Integration
+
+#### Test Nation Persistence
+```bash
+1. Add player to nation: /nation join america
+2. Restart server
+3. Check: Player should still be in america
+4. Verify: player_data/{uuid}.yml contains "current_nation: america"
+```
+
+#### Test Role Persistence  
+```bash
+1. Assign role: /dd role add PlayerName ArmyChief
+2. Restart server  
+3. Check: Player should still have ArmyChief role in chat
+4. Verify: player_data/{uuid}.yml contains "current_role: ARMYCHIEF"
+```
+
+## Legacy UserDataService (DEPRECATED)
+
+The old UserDataService system has been replaced by PlayerDataManager. Do not use the following patterns:
 
 ```java
 userDataService.getUserValue(player, "stats.kills", 0)

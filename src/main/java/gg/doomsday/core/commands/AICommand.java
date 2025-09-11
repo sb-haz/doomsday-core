@@ -1,7 +1,7 @@
 package gg.doomsday.core.commands;
 
 import gg.doomsday.core.ai.AIService;
-import gg.doomsday.core.ai.PlayerStatsManager;
+import gg.doomsday.core.data.PlayerDataManager;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -101,30 +101,40 @@ public class AICommand implements CommandExecutor, TabCompleter {
     }
     
     private void showPlayerStats(Player player) {
-        PlayerStatsManager.PlayerAIStats stats = aiService.getPlayerStats(player.getUniqueId());
+        PlayerDataManager.PlayerData stats = aiService.getPlayerStats(player.getUniqueId());
         
-        player.sendMessage(ChatColor.GOLD + "=== Your AI Usage Stats ===");
-        player.sendMessage(ChatColor.YELLOW + "Total Requests: " + ChatColor.WHITE + stats.getTotalRequests());
-        player.sendMessage(ChatColor.YELLOW + "Requests Today: " + ChatColor.WHITE + stats.getRequestsToday());
+        player.sendMessage(ChatColor.WHITE + "" + ChatColor.ITALIC + "--------------------");
+        player.sendMessage(ChatColor.GOLD + "AI Usage Stats");
         
-        if (stats.getLastRequestTime() > 0) {
-            long timeSince = (System.currentTimeMillis() - stats.getLastRequestTime()) / 1000;
-            String timeStr;
-            
-            if (timeSince < 60) {
-                timeStr = timeSince + " seconds ago";
-            } else if (timeSince < 3600) {
-                timeStr = (timeSince / 60) + " minutes ago";
-            } else if (timeSince < 86400) {
-                timeStr = (timeSince / 3600) + " hours ago";
-            } else {
-                timeStr = (timeSince / 86400) + " days ago";
-            }
-            
-            player.sendMessage(ChatColor.YELLOW + "Last Request: " + ChatColor.WHITE + timeStr);
-        }
+        // Get current usage for rate limiting
+        String[] rateLimitInfo = aiService.getRateLimitInfo(player.getUniqueId());
+        int currentHourRequests = Integer.parseInt(rateLimitInfo[1]);
+        int maxPerHour = Integer.parseInt(rateLimitInfo[3]);
         
-        player.sendMessage(ChatColor.GRAY + "Use " + ChatColor.YELLOW + "/ai clear" + ChatColor.GRAY + " to reset conversation history");
+        // Show hour limit  
+        ChatColor hourColor = currentHourRequests >= maxPerHour ? ChatColor.RED : ChatColor.GREEN;
+        player.sendMessage(ChatColor.GRAY + "- " + ChatColor.YELLOW + "Hourly Usage: " + hourColor + currentHourRequests + ChatColor.GRAY + "/" + ChatColor.WHITE + maxPerHour);
+        
+        player.sendMessage(ChatColor.GRAY + "- " + ChatColor.YELLOW + "Requests Today: " + ChatColor.WHITE + stats.getRequestsToday());
+        
+        // Calculate time until next hour reset  
+        long currentTime = System.currentTimeMillis();
+        long nextHourReset = 3600 - ((currentTime / 1000) % 3600);
+        long hoursLeft = nextHourReset / 3600;
+        long minutesLeft = (nextHourReset % 3600) / 60;
+        String hourResetStr = hoursLeft > 0 ? hoursLeft + "h " + minutesLeft + "m" : minutesLeft + "m";
+        player.sendMessage(ChatColor.GRAY + "- " + ChatColor.YELLOW + "Hourly Reset: " + ChatColor.WHITE + hourResetStr);
+        
+        // Calculate time until daily reset (midnight)
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        java.time.LocalDateTime midnight = now.toLocalDate().plusDays(1).atStartOfDay();
+        long secondsUntilMidnight = java.time.Duration.between(now, midnight).getSeconds();
+        long hoursUntilMidnight = secondsUntilMidnight / 3600;
+        long minutesUntilMidnight = (secondsUntilMidnight % 3600) / 60;
+        String dailyResetStr = hoursUntilMidnight > 0 ? hoursUntilMidnight + "h " + minutesUntilMidnight + "m" : minutesUntilMidnight + "m";
+        player.sendMessage(ChatColor.GRAY + "- " + ChatColor.YELLOW + "Daily Reset: " + ChatColor.WHITE + dailyResetStr);
+        
+        player.sendMessage(ChatColor.WHITE + "" + ChatColor.ITALIC + "--------------------");
     }
     
     @Override

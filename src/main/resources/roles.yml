@@ -57,35 +57,35 @@ nations:
 role-info:
   President:
     description: "Leader of the nation with full authority"
-    color: "&8"  # Dark Gray (configurable for chat display)
+    color: "&4"  # Dark Red - Highest authority
     priority: 1
   
   ArmyChief:
     description: "Military commander of the nation"
-    color: "&8"  # Dark Gray (configurable for chat display)
+    color: "&c"  # Red - Military leadership
     priority: 2
     
   Soldier:
     description: "Military personnel protecting the nation"
-    color: "&8"  # Dark Gray (configurable for chat display)
+    color: "&6"  # Gold - Military personnel
     priority: 3
     
   Builder:
     description: "Construction specialist for nation development"
-    color: "&8"  # Dark Gray (configurable for chat display)
+    color: "&a"  # Green - Construction/building
     priority: 4
     
   Healer:
     description: "Medical support for nation members"
-    color: "&8"  # Dark Gray (configurable for chat display)
+    color: "&d"  # Light Purple - Medical/support
     priority: 5
     
   Trader:
     description: "Economic specialist managing resources"
-    color: "&8"  # Dark Gray (configurable for chat display)
+    color: "&e"  # Yellow - Trade/economy
     priority: 6
     
   Citizen:
     description: "Default role for nation members"
-    color: "&8"  # Dark Gray (configurable for chat display)
+    color: "&7"  # Gray - Default citizens
     priority: 7

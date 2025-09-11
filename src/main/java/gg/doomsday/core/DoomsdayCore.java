@@ -49,11 +49,12 @@ import gg.doomsday.core.listeners.AIPlayerListener;
 import gg.doomsday.core.listeners.AIChatListener;
 import gg.doomsday.core.listeners.CustomChatListener;
 import gg.doomsday.core.ai.AIService;
-import gg.doomsday.core.ai.PlayerStatsManager;
+import gg.doomsday.core.data.PlayerDataManager;
 import gg.doomsday.core.scoreboard.GameScoreboard;
 import gg.doomsday.core.messaging.MessagingManager;
 import gg.doomsday.core.gui.utils.ItemBuilder;
 import gg.doomsday.core.fuel.MissileFuelManager;
+import gg.doomsday.core.fuel.AntiAirFuelManager;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -86,8 +87,9 @@ public final class DoomsdayCore extends JavaPlugin implements TabCompleter {
     private GameScoreboard gameScoreboard;
     private MessagingManager messagingManager;
     private MissileFuelManager fuelManager;
+    private AntiAirFuelManager antiAirFuelManager;
     private AIService aiService;
-    private PlayerStatsManager playerStatsManager;
+    private PlayerDataManager playerDataManager;
     private CustomChatListener customChatListener;
 
     @Override
@@ -135,7 +137,7 @@ public final class DoomsdayCore extends JavaPlugin implements TabCompleter {
             
             // Initialize nation player manager
             getLogger().info("Loading nation player manager...");
-            nationPlayerManager = new NationPlayerManager(this, nationManager);
+            nationPlayerManager = new NationPlayerManager(this, nationManager, playerDataManager);
             
             // Connect nation player manager to nation manager for disaster effects
             nationManager.setNationPlayerManager(nationPlayerManager);
@@ -144,31 +146,37 @@ public final class DoomsdayCore extends JavaPlugin implements TabCompleter {
             getLogger().info("Loading messaging manager...");
             messagingManager = new MessagingManager(this, nationPlayerManager);
             
-            // Initialize fuel manager
+            // Initialize fuel managers
             getLogger().info("Loading missile fuel manager...");
             fuelManager = new MissileFuelManager(this);
             
-            // Initialize AI service and player stats manager
+            getLogger().info("Loading anti-air fuel manager...");
+            antiAirFuelManager = new AntiAirFuelManager(this);
+            
+            // Initialize player data manager and AI service
+            getLogger().info("Loading player data manager...");
+            playerDataManager = new PlayerDataManager(this);
+            
             getLogger().info("Loading AI service...");
-            playerStatsManager = new PlayerStatsManager(this);
             File aiConfigFile = new File(getDataFolder(), "ai_config.yml");
             if (!aiConfigFile.exists()) {
                 saveResource("ai_config.yml", false);
             }
             YamlConfiguration aiConfig = YamlConfiguration.loadConfiguration(aiConfigFile);
-            aiService = new AIService(this, aiConfig, playerStatsManager);
+            aiService = new AIService(this, aiConfig, playerDataManager);
+        
+        // Initialize season system first (needed for role management)
+        getLogger().info("Loading season system...");
+        seasonManager = new SeasonManager(this);
         
         // Initialize role management system
         getLogger().info("Loading role management system...");
-        roleManager = new NationRoleManager(this, nationPlayerManager, seasonManager);
+        roleManager = new NationRoleManager(this, nationPlayerManager, seasonManager, playerDataManager);
         roleScheduler = new RoleAssignmentScheduler(this, roleManager);
         roleItemManager = new RoleClaimItemManager(this);
         
         // Initialize nation GUI with role manager
         nationGUI = new NationGUI(this, nationManager, nationPlayerManager, roleManager);
-        
-        // Initialize season system
-        seasonManager = new SeasonManager(this);
         
         // Initialize season event listener for role integration
         seasonEventListener = new SeasonEventListener(this, roleManager, roleScheduler, seasonManager);
@@ -209,9 +217,10 @@ public final class DoomsdayCore extends JavaPlugin implements TabCompleter {
         getServer().getPluginManager().registerEvents(explosionHandler, this);
         getServer().getPluginManager().registerEvents(reinforcementHandler, this);
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(seasonManager, gameScoreboard), this);
-        getServer().getPluginManager().registerEvents(new AIPlayerListener(this, playerStatsManager, aiService), this);
+        getServer().getPluginManager().registerEvents(new AIPlayerListener(this, playerDataManager, aiService), this);
         getServer().getPluginManager().registerEvents(new AIChatListener(this, aiService), this);
-        customChatListener = new CustomChatListener(this, nationPlayerManager, nationManager);
+        customChatListener = new CustomChatListener(this, nationPlayerManager, nationManager, playerDataManager);
+        customChatListener.setRoleManager(roleManager);
         getServer().getPluginManager().registerEvents(customChatListener, this);
         getServer().getPluginManager().registerEvents(new RoleClaimListener(this, roleManager, nationPlayerManager, roleItemManager), this);
         
@@ -225,8 +234,8 @@ public final class DoomsdayCore extends JavaPlugin implements TabCompleter {
         getCommand("antiair").setTabCompleter(antiairCommand);
         
         NationsCommand nationsCommand = new NationsCommand(this, nationManager, nationPlayerManager, nationGUI);
-        getCommand("nations").setExecutor(nationsCommand);
-        getCommand("nations").setTabCompleter(nationsCommand);
+        getCommand("nation").setExecutor(nationsCommand);
+        getCommand("nation").setTabCompleter(nationsCommand);
         
         SeasonCommand seasonCommand = new SeasonCommand(seasonManager);
         getCommand("seasons").setExecutor(seasonCommand);
@@ -249,6 +258,7 @@ public final class DoomsdayCore extends JavaPlugin implements TabCompleter {
         
         // Nation chat command
         NationChatCommand nationChatCommand = new NationChatCommand(this, nationPlayerManager, nationManager);
+        nationChatCommand.setRoleManager(roleManager);
         getCommand("n").setExecutor(nationChatCommand);
         getCommand("n").setTabCompleter(nationChatCommand);
         
@@ -323,8 +333,16 @@ public final class DoomsdayCore extends JavaPlugin implements TabCompleter {
         return fuelManager;
     }
     
+    public AntiAirFuelManager getAntiAirFuelManager() {
+        return antiAirFuelManager;
+    }
+    
     public CustomChatListener getCustomChatListener() {
         return customChatListener;
+    }
+    
+    public PlayerDataManager getPlayerDataManager() {
+        return playerDataManager;
     }
     
     @Override

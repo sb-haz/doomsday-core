@@ -19,13 +19,13 @@ public class AIChatListener implements Listener {
         this.aiService = aiService;
     }
     
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerChat(AsyncPlayerChatEvent event) {
         String message = event.getMessage();
         Player player = event.getPlayer();
         
-        // Check if message starts with @ai
-        if (!message.toLowerCase().startsWith("@ai ")) {
+        // Check if message contains @ai anywhere
+        if (!message.toLowerCase().contains("@ai")) {
             return;
         }
         
@@ -39,12 +39,12 @@ public class AIChatListener implements Listener {
             return;
         }
         
-        // Extract the actual message (remove "@ai ")
-        String aiMessage = message.substring(4).trim();
+        // Extract the actual message (remove "@ai" and get the rest)
+        String aiMessage = extractAIMessage(message);
         
         if (aiMessage.isEmpty()) {
             plugin.getServer().getScheduler().runTask(plugin, () -> {
-                player.sendMessage(ChatColor.RED + "Please provide a message after @ai!");
+                player.sendMessage(ChatColor.RED + "Please provide a message with @ai!");
             });
             return;
         }
@@ -69,5 +69,24 @@ public class AIChatListener implements Listener {
             plugin.getLogger().warning("AI service error for public message from player " + player.getName() + ": " + throwable.getMessage());
             return null;
         });
+    }
+    
+    private String extractAIMessage(String message) {
+        // Remove @ai from the message and return the rest
+        String lowerMessage = message.toLowerCase();
+        int aiIndex = lowerMessage.indexOf("@ai");
+        
+        if (aiIndex == -1) {
+            return "";
+        }
+        
+        // Get the part before @ai and the part after @ai
+        String beforeAI = message.substring(0, aiIndex).trim();
+        String afterAI = message.substring(aiIndex + 3).trim(); // +3 for "@ai"
+        
+        // Combine both parts, removing @ai
+        String result = (beforeAI + " " + afterAI).trim();
+        
+        return result.isEmpty() ? "" : result;
     }
 }

@@ -1,5 +1,6 @@
 package gg.doomsday.core.nations;
 
+import gg.doomsday.core.data.PlayerDataManager;
 import gg.doomsday.core.seasons.Season;
 import gg.doomsday.core.seasons.SeasonManager;
 import org.bukkit.Bukkit;
@@ -22,6 +23,7 @@ public class NationRoleManager {
     private final JavaPlugin plugin;
     private final NationPlayerManager nationPlayerManager;
     private final SeasonManager seasonManager;
+    private final PlayerDataManager playerDataManager;
     
     private FileConfiguration rolesConfig;
     private File rolesFile;
@@ -35,13 +37,15 @@ public class NationRoleManager {
     // Configuration cache
     private final Map<String, Map<NationRole, Integer>> nationRoleSlots = new ConcurrentHashMap<>();
     private final Map<String, Double> donorWeights = new ConcurrentHashMap<>();
+    private final Map<NationRole, String> roleColors = new ConcurrentHashMap<>();
     private int claimWindowMinutes = 60;
     private boolean weightedAssignment = true;
 
-    public NationRoleManager(JavaPlugin plugin, NationPlayerManager nationPlayerManager, SeasonManager seasonManager) {
+    public NationRoleManager(JavaPlugin plugin, NationPlayerManager nationPlayerManager, SeasonManager seasonManager, PlayerDataManager playerDataManager) {
         this.plugin = plugin;
         this.nationPlayerManager = nationPlayerManager;
         this.seasonManager = seasonManager;
+        this.playerDataManager = playerDataManager;
         loadConfiguration();
         loadRoleAssignments();
     }
@@ -87,7 +91,23 @@ public class NationRoleManager {
             }
         }
         
-        plugin.getLogger().info("Loaded role configuration - Claim window: " + claimWindowMinutes + " minutes");
+        // Load role colors
+        roleColors.clear();
+        ConfigurationSection roleInfoSection = rolesConfig.getConfigurationSection("role-info");
+        if (roleInfoSection != null) {
+            for (NationRole role : NationRole.values()) {
+                String colorPath = role.getDisplayName() + ".color";
+                String color = roleInfoSection.getString(colorPath, role.getDefaultColorCode());
+                roleColors.put(role, color);
+            }
+        } else {
+            // Use default colors if no role-info section exists
+            for (NationRole role : NationRole.values()) {
+                roleColors.put(role, role.getDefaultColorCode());
+            }
+        }
+        
+        plugin.getLogger().info("Loaded role configuration - Claim window: " + claimWindowMinutes + " minutes, Role colors: " + roleColors.size());
     }
 
     private void saveConfiguration() {
@@ -99,13 +119,10 @@ public class NationRoleManager {
     }
 
     private void loadRoleAssignments() {
-        // Load role assignments from nation_players.yml or separate file
-        // For now, we'll store in memory and persist in the existing nation_players.yml
         roleAssignments.clear();
         playerRoleCache.clear();
         
         // Initialize empty role assignment maps for each nation
-        // Get nations from the nation manager instead of the cache
         for (String nationId : nationRoleSlots.keySet()) {
             Map<NationRole, List<NationRoleAssignment>> nationRoles = new HashMap<>();
             for (NationRole role : NationRole.values()) {
@@ -114,7 +131,43 @@ public class NationRoleManager {
             roleAssignments.put(nationId, nationRoles);
         }
         
-        plugin.getLogger().info("Initialized role assignments for " + roleAssignments.size() + " nations");
+        // Load existing role assignments from player data files
+        File playerDataDir = new File(plugin.getDataFolder(), "player_data");
+        if (playerDataDir.exists() && playerDataDir.isDirectory()) {
+            File[] playerFiles = playerDataDir.listFiles((dir, name) -> name.endsWith(".yml"));
+            if (playerFiles != null) {
+                for (File playerFile : playerFiles) {
+                    try {
+                        String fileName = playerFile.getName();
+                        String uuidString = fileName.substring(0, fileName.length() - 4);
+                        UUID playerId = UUID.fromString(uuidString);
+                        
+                        PlayerDataManager.PlayerData playerData = playerDataManager.getPlayerData(playerId);
+                        NationRole role = playerData.getCurrentRole();
+                        String nationId = playerData.getCurrentNation();
+                        
+                        // Only load non-citizen roles and players with nations
+                        if (role != NationRole.CITIZEN && !nationId.isEmpty() && roleAssignments.containsKey(nationId)) {
+                            String playerName = playerData.getLastKnownUsername();
+                            String assignedBy = playerData.getAssignedBy();
+                            
+                            NationRoleAssignment assignment = new NationRoleAssignment(playerId, playerName, role, assignedBy);
+                            
+                            // Add to nation role assignments
+                            roleAssignments.get(nationId).get(role).add(assignment);
+                            
+                            // Add to player cache
+                            playerRoleCache.put(playerId, assignment);
+                        }
+                        
+                    } catch (Exception e) {
+                        plugin.getLogger().warning("Failed to load role assignment from file: " + playerFile.getName() + " - " + e.getMessage());
+                    }
+                }
+            }
+        }
+        
+        plugin.getLogger().info("Loaded role assignments for " + roleAssignments.size() + " nations, " + playerRoleCache.size() + " players with roles");
     }
 
     public boolean isClaimWindowActive() {
@@ -189,7 +242,13 @@ public class NationRoleManager {
             return false;
         }
         
-        // Create assignment
+        // Save role to persistent player data
+        playerDataManager.assignPlayerRole(playerId, role, method);
+        
+        // Update nation assignment if needed
+        playerDataManager.setPlayerNation(playerId, nationId);
+        
+        // Create assignment for in-memory tracking
         NationRoleAssignment assignment = new NationRoleAssignment(playerId, playerName, role, method);
         
         // Add to nation role assignments
@@ -203,33 +262,45 @@ public class NationRoleManager {
     }
 
     public boolean removePlayerRole(UUID playerId, boolean log) {
-        NationRoleAssignment currentAssignment = playerRoleCache.remove(playerId);
-        if (currentAssignment == null) {
-            return false;
+        // Get current role from persistent data
+        PlayerDataManager.PlayerData playerData = playerDataManager.getPlayerData(playerId);
+        NationRole currentRole = playerData.getCurrentRole();
+        
+        if (currentRole == NationRole.CITIZEN) {
+            return false; // Already a citizen, nothing to remove
         }
         
-        // Find player's nation
+        // Remove role from persistent data
+        playerDataManager.removePlayerRole(playerId, "ADMIN");
+        
+        // Remove from in-memory cache
+        NationRoleAssignment currentAssignment = playerRoleCache.remove(playerId);
+        
+        // Find player's nation and remove from role assignments
         String playerNation = nationPlayerManager.getPlayerNation(playerId);
         if (playerNation != null && roleAssignments.containsKey(playerNation)) {
             // Remove from role assignments
-            List<NationRoleAssignment> roleList = roleAssignments.get(playerNation).get(currentAssignment.getRole());
+            List<NationRoleAssignment> roleList = roleAssignments.get(playerNation).get(currentRole);
             roleList.removeIf(assignment -> assignment.getPlayerId().equals(playerId));
         }
         
         if (log) {
-            plugin.getLogger().info("Removed role " + currentAssignment.getRole().getDisplayName() + " from " + currentAssignment.getPlayerName());
+            String playerName = currentAssignment != null ? currentAssignment.getPlayerName() : "Unknown";
+            plugin.getLogger().info("Removed role " + currentRole.getDisplayName() + " from " + playerName);
         }
         
         return true;
     }
 
     public boolean hasRole(UUID playerId) {
-        return playerRoleCache.containsKey(playerId);
+        PlayerDataManager.PlayerData playerData = playerDataManager.getPlayerData(playerId);
+        return playerData.getCurrentRole() != NationRole.CITIZEN;
     }
 
     public NationRole getPlayerRole(UUID playerId) {
-        NationRoleAssignment assignment = playerRoleCache.get(playerId);
-        return assignment != null ? assignment.getRole() : NationRole.CITIZEN;
+        // Get role from persistent player data
+        PlayerDataManager.PlayerData playerData = playerDataManager.getPlayerData(playerId);
+        return playerData.getCurrentRole();
     }
 
     public NationRoleAssignment getPlayerRoleAssignment(UUID playerId) {
@@ -431,5 +502,9 @@ public class NationRoleManager {
         }
         
         return result;
+    }
+
+    public String getRoleColor(NationRole role) {
+        return roleColors.getOrDefault(role, role.getDefaultColorCode());
     }
 }
